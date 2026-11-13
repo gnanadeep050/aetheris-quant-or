@@ -1,27 +1,3 @@
-import sys
-import subprocess
-import importlib.util
-
-# ==========================================
-# 0. AUTOMATIC FAILSAFE DEPENDENCY BOOTSTRAPPER
-# ==========================================
-REQUIRED_PACKAGES = {
-    "plotly": "plotly",
-    "scipy": "scipy",
-    "sklearn": "scikit-learn",
-    "fpdf": "fpdf2",
-}
-
-missing_pkgs = [
-    pip_name for mod_name, pip_name in REQUIRED_PACKAGES.items()
-    if importlib.util.find_spec(mod_name) is None
-]
-
-if missing_pkgs:
-    subprocess.check_call(
-        [sys.executable, "-m", "pip", "install", "--quiet", *missing_pkgs]
-    )
-
 import streamlit as st
 import numpy as np
 import pandas as pd
