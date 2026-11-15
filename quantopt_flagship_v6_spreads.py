@@ -12,16 +12,22 @@ from sklearn.metrics import r2_score
 from datetime import datetime
 
 try:
+    import yfinance as yf
+    YFINANCE_AVAILABLE = True
+except ImportError:
+    YFINANCE_AVAILABLE = False
+
+try:
     from fpdf import FPDF
     FPDF_AVAILABLE = True
 except ImportError:
     FPDF_AVAILABLE = False
 
 # ==========================================
-# 1. PAGE CONFIG & ANIMATED CYBER-QUANT CSS THEME
+# 1. PAGE CONFIG & ANIMATED ORANGE & WHITE THEME
 # ==========================================
 st.set_page_config(
-    page_title="AETHERIS QUANT // OR | Animated Multi-Asset & Derivatives Terminal",
+    page_title="AETHERIS QUANT // OR | Orange & White Multi-Asset Terminal",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -34,9 +40,9 @@ st.markdown("""
         100% { background-position: 0% 50%; }
     }
     @keyframes pulseBorder {
-        0% { box-shadow: 0 0 8px rgba(0, 245, 212, 0.25); }
-        50% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.45); }
-        100% { box-shadow: 0 0 8px rgba(0, 245, 212, 0.25); }
+        0% { box-shadow: 0 4px 16px rgba(249, 115, 22, 0.16); }
+        50% { box-shadow: 0 8px 26px rgba(234, 88, 12, 0.30); }
+        100% { box-shadow: 0 4px 16px rgba(249, 115, 22, 0.16); }
     }
     @keyframes tickerScroll {
         0% { transform: translateX(0%); }
@@ -46,147 +52,190 @@ st.markdown("""
         from { opacity: 0; transform: translateY(8px); }
         to { opacity: 1; transform: translateY(0); }
     }
+    @keyframes liveBlink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.45; }
+    }
 
+    /* Main Canvas: Clean White & Warm Ivory */
     .stApp {
-        background: radial-gradient(circle at 15% 10%, #0f172a 0%, #060913 55%, #090d1a 100%);
-        color: #f8fafc;
+        background: linear-gradient(180deg, #ffffff 0%, #fffaf5 60%, #fff7ed 100%);
+        color: #0f172a;
     }
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0b1120 0%, #0f172a 100%);
-        border-right: 1px solid rgba(56, 189, 248, 0.25);
+        background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+        border-right: 1px solid #fed7aa;
+    }
+    [data-testid="stSidebar"] * {
+        color: #1e293b;
+    }
+
+    /* Force clean dark text on headings & labels */
+    h1, h2, h3, h4, p, label, .stMarkdown {
+        color: #0f172a !important;
+    }
+
+    .live-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: #ffffff;
+        color: #ea580c;
+        border: 1px solid #fdba74;
+        animation: liveBlink 2.2s infinite;
     }
 
     /* Live Animated Market Ticker Tape */
     .ticker-wrap {
         width: 100%;
         overflow: hidden;
-        background: linear-gradient(90deg, #090d16, #111827, #090d16);
-        border-top: 1px solid rgba(0, 245, 212, 0.35);
-        border-bottom: 1px solid rgba(139, 92, 246, 0.35);
-        padding: 7px 0;
+        background: #fff7ed;
+        border-top: 1px solid #fdba74;
+        border-bottom: 1px solid #fdba74;
+        padding: 8px 0;
         margin-bottom: 14px;
         white-space: nowrap;
     }
     .ticker-move {
         display: inline-block;
-        animation: tickerScroll 28s linear infinite;
+        animation: tickerScroll 36s linear infinite;
         font-family: monospace;
-        font-size: 0.80rem;
-        letter-spacing: 0.05em;
+        font-size: 0.81rem;
+        letter-spacing: 0.04em;
     }
     .ticker-move:hover { animation-play-state: paused; }
-    .tick-up { color: #00f5d4; font-weight: 700; margin-right: 28px; }
-    .tick-down { color: #fb7185; font-weight: 700; margin-right: 28px; }
-    .tick-neutral { color: #38bdf8; font-weight: 700; margin-right: 28px; }
+    .tick-up { color: #059669; font-weight: 700; margin-right: 28px; }
+    .tick-down { color: #e11d48; font-weight: 700; margin-right: 28px; }
+    .tick-neutral { color: #ea580c; font-weight: 700; margin-right: 28px; }
 
-    /* Animated Header Banner */
+    /* Animated Orange Header Banner */
     .brand-header {
-        background: linear-gradient(270deg, #0f172a, #1e1b4b, #064e3b, #0f172a);
+        background: linear-gradient(270deg, #ea580c, #f97316, #fb923c, #ea580c);
         background-size: 300% 300%;
         animation: gradientFlow 10s ease infinite, pulseBorder 4s infinite;
-        border: 1px solid rgba(56, 189, 248, 0.4);
-        border-radius: 12px;
-        padding: 20px 26px;
-        margin-bottom: 14px;
+        border: 1px solid #fb923c;
+        border-radius: 14px;
+        padding: 22px 28px;
+        margin-bottom: 16px;
     }
     .brand-title {
-        font-size: 1.80rem;
+        font-size: 1.85rem;
         font-weight: 900;
         letter-spacing: 0.10em;
-        background: linear-gradient(90deg, #00f5d4, #38bdf8, #a78bfa, #f472b6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: #ffffff !important;
         font-family: 'Segoe UI', sans-serif;
     }
     .brand-sub {
-        font-size: 0.78rem;
-        color: #cbd5e1;
-        letter-spacing: 0.16em;
+        font-size: 0.80rem;
+        color: #fff7ed !important;
+        letter-spacing: 0.15em;
         text-transform: uppercase;
         margin-top: 4px;
+        font-weight: 600;
     }
 
-    /* Interactive Animated Metric Cards */
+    /* Crisp White & Orange Metric Cards */
     .metric-card {
-        background: linear-gradient(145deg, rgba(17, 24, 39, 0.92), rgba(15, 23, 42, 0.96));
-        border: 1px solid rgba(56, 189, 248, 0.25);
+        background: #ffffff;
+        border: 1px solid #fed7aa;
         border-radius: 12px;
-        padding: 16px;
+        padding: 16px 18px;
+        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.08);
         transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
         animation: fadeInSlide 0.5s ease-out;
-        position: relative;
-        overflow: hidden;
     }
     .metric-card:hover {
         transform: translateY(-4px);
-        border-color: #00f5d4;
-        box-shadow: 0 8px 24px rgba(0, 245, 212, 0.22);
+        border-color: #f97316;
+        box-shadow: 0 10px 24px rgba(249, 115, 22, 0.18);
     }
-    .card-cyan { border-top: 3px solid #00f5d4; }
-    .card-violet { border-top: 3px solid #a78bfa; }
-    .card-amber { border-top: 3px solid #fbbf24; }
-    .card-rose { border-top: 3px solid #fb7185; }
+    .card-orange-1 { border-top: 4px solid #f97316; }
+    .card-orange-2 { border-top: 4px solid #ea580c; }
+    .card-amber    { border-top: 4px solid #f59e0b; }
+    .card-emerald  { border-top: 4px solid #10b981; }
 
-    .metric-label { font-size: 0.70rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; }
-    .metric-value { font-size: 1.44rem; font-weight: 800; color: #f8fafc; margin-top: 5px; font-family: monospace; }
-    .metric-sub { font-size: 0.76rem; color: #00f5d4; margin-top: 5px; font-weight: 600; }
-    .metric-alert { font-size: 0.76rem; color: #fbbf24; margin-top: 5px; font-weight: 600; }
+    .metric-label { font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+    .metric-value { font-size: 1.46rem; font-weight: 800; color: #0f172a; margin-top: 5px; font-family: monospace; }
+    .metric-sub { font-size: 0.78rem; color: #059669; margin-top: 5px; font-weight: 600; }
+    .metric-alert { font-size: 0.78rem; color: #ea580c; margin-top: 5px; font-weight: 600; }
 
-    /* Glowing Executive Signal Strip */
+    /* Warm Orange Executive Signal Strip */
     .action-banner {
-        background: linear-gradient(90deg, rgba(0, 245, 212, 0.12), rgba(139, 92, 246, 0.14), rgba(56, 189, 248, 0.12));
-        border: 1px solid rgba(0, 245, 212, 0.45);
-        border-radius: 8px;
-        padding: 13px 18px;
-        margin-bottom: 16px;
-        font-size: 0.89rem;
-        color: #f1f5f9;
+        background: linear-gradient(90deg, #fff7ed, #ffedd5, #fff7ed);
+        border: 1px solid #fdba74;
+        border-left: 5px solid #f97316;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-bottom: 18px;
+        font-size: 0.90rem;
+        color: #1e293b;
         animation: fadeInSlide 0.6s ease-out;
     }
 
-    /* Animated Catalyst Cards */
+    /* White Catalyst Cards with Orange Accent */
     .catalyst-card {
-        background: linear-gradient(135deg, #0f172a, #111827);
-        border-radius: 8px;
-        padding: 11px 14px;
-        margin-bottom: 9px;
+        background: #ffffff;
+        border: 1px solid #fed7aa;
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .catalyst-card:hover {
         transform: translateX(4px);
-        box-shadow: 0 4px 14px rgba(56, 189, 248, 0.2);
+        box-shadow: 0 6px 16px rgba(249, 115, 22, 0.14);
     }
 
-    /* Stylized Tabs */
+    /* Stylized Orange & White Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 6px;
-        background-color: rgba(15, 23, 42, 0.7);
+        background-color: #fff7ed;
         padding: 6px;
         border-radius: 10px;
-        border: 1px solid #1e293b;
+        border: 1px solid #fed7aa;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 7px;
         padding: 8px 14px;
-        color: #94a3b8;
+        color: #475569;
         font-weight: 600;
         transition: all 0.2s ease;
     }
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(90deg, #0284c7, #7c3aed) !important;
+        background: linear-gradient(90deg, #f97316, #ea580c) !important;
         color: #ffffff !important;
-        box-shadow: 0 2px 12px rgba(124, 58, 237, 0.45);
+        box-shadow: 0 3px 12px rgba(234, 88, 12, 0.35);
+    }
+
+    /* Buttons styled in Sunset Orange */
+    .stButton > button, .stDownloadButton > button {
+        background: linear-gradient(90deg, #f97316, #ea580c) !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 3px 10px rgba(249, 115, 22, 0.25) !important;
+    }
+    .stButton > button:hover, .stDownloadButton > button:hover {
+        background: linear-gradient(90deg, #ea580c, #c2410c) !important;
+        transform: translateY(-1px);
     }
 
     .formula-box {
-        background: linear-gradient(145deg, #030712, #0b1120);
-        border-left: 4px solid #a78bfa;
-        padding: 15px 18px;
+        background: #ffffff;
+        border: 1px solid #fed7aa;
+        border-left: 5px solid #f97316;
+        padding: 16px 20px;
         font-family: monospace;
-        font-size: 0.82rem;
-        color: #e2e8f0;
+        font-size: 0.83rem;
+        color: #1e293b;
         border-radius: 8px;
-        line-height: 1.6;
+        line-height: 1.65;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -196,7 +245,7 @@ st.markdown("""
 # ==========================================
 INVESTOR_PRESETS = {
     "Balanced Wealth Builder (Recommended)": {
-        "regime": "Normal / Calibrated Growth (Nov 2026 Baseline)",
+        "regime": "Normal / Calibrated Growth (Live Baseline)",
         "horizon": "3 Years",
         "lump": 1500000,
         "sip": 25000,
@@ -209,7 +258,7 @@ INVESTOR_PRESETS = {
         "opt_mode": "All Strategies (Auto-Select Best EV)"
     },
     "Aggressive High-Growth + Crypto + IPOs": {
-        "regime": "Normal / Calibrated Growth (Nov 2026 Baseline)",
+        "regime": "Normal / Calibrated Growth (Live Baseline)",
         "horizon": "5 Years",
         "lump": 2000000,
         "sip": 40000,
@@ -235,7 +284,7 @@ INVESTOR_PRESETS = {
         "opt_mode": "Vertical Debit Spreads Only (Bull Call / Bear Put)"
     },
     "Active Day Trader & Options Spreads Focus": {
-        "regime": "Normal / Calibrated Growth (Nov 2026 Baseline)",
+        "regime": "Normal / Calibrated Growth (Live Baseline)",
         "horizon": "1 Year",
         "lump": 500000,
         "sip": 15000,
@@ -253,11 +302,11 @@ BASE_BRENT_USD = 96.0
 BASE_USD_INR = 94.25
 
 MACRO_ENVIRONMENTS = {
-    "Normal / Calibrated Growth (Nov 2026 Baseline)": {
+    "Normal / Calibrated Growth (Live Baseline)": {
         "deploy_now_pct": 1.00, "rbi_repo_pct": 5.50, "fed_rate_pct": 4.00,
         "vol_mult": 1.00, "crypto_cap_mult": 1.00, "default_brent": 96.0, "default_usdinr": 94.25,
         "sector_alpha_shift": {},
-        "summary": "Nifty 50: 25,144.30 | Bank Nifty: 61,034.10 | Brent: $96.0/bbl | USD/INR: 94.25 | RBI Repo: 5.50%."
+        "summary": "Live market baseline calibrated with real-time spot feeds, RBI Repo 5.50%, and Fed 4.00%."
     },
     "Bank Interest Rate Hike Cycle (+50 to +100 bps RBI/Fed)": {
         "deploy_now_pct": 0.65, "rbi_repo_pct": 6.25, "fed_rate_pct": 4.75,
@@ -313,18 +362,18 @@ FX_SECTOR_BETA_PER_1INR = {
 # ==========================================
 NSE_MASTER_DATA = [
     {"Ticker": "RELIANCE.NS",   "Company": "Reliance Industries",      "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "Energy & Digital",    "Spot": 1318.0, "Lot_Size": 500,  "Base_Ret": 0.148, "Vol": 0.21, "Beta": 1.04, "ROE": 0.108, "YoY_Rev_%": 11.4, "YoY_PAT_%": 14.2, "DE_Ratio": 0.42, "Moat_Score": 9.1, "OI_Signal": "Long Buildup",   "News_Sent": +0.62, "News_Headline": "Energy sector ends green amid crude strength; Jio AI cloud expansion accelerates.", "Key_Products": "Jio 5G/AI Cloud, Retail, O2C, New Energy Gigafactories"},
-    {"Ticker": "TCS.NS",        "Company": "Tata Consultancy Services","Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "IT & AI Services",    "Spot": 4125.0, "Lot_Size": 225,  "Base_Ret": 0.135, "Vol": 0.18, "Beta": 0.81, "ROE": 0.485, "YoY_Rev_%": 8.2,  "YoY_PAT_%": 10.5, "DE_Ratio": 0.04, "Moat_Score": 9.0, "OI_Signal": "Short Covering", "News_Sent": +0.28, "News_Headline": "USD/INR near 94.25 cushions IT export margins despite cautious US BFSI spend.", "Key_Products": "Enterprise AI Cloud, BaNCS, Ignio Cognitive Automation"},
-    {"Ticker": "HDFCBANK.NS",   "Company": "HDFC Bank",                "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "Banking & Finance",   "Spot": 1742.0, "Lot_Size": 650,  "Base_Ret": 0.142, "Vol": 0.19, "Beta": 0.93, "ROE": 0.169, "YoY_Rev_%": 16.5, "YoY_PAT_%": 17.8, "DE_Ratio": 1.10, "Moat_Score": 9.2, "OI_Signal": "Long Unwinding", "News_Sent": -0.18, "News_Headline": "Bank Nifty dips 0.79% to 61,034 on profit booking after 3-day bank rally.", "Key_Products": "Retail & Corporate Lending, PayZapp, SmartHub Vyapar"},
+    {"Ticker": "TCS.NS",        "Company": "Tata Consultancy Services","Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "IT & AI Services",    "Spot": 4125.0, "Lot_Size": 225,  "Base_Ret": 0.135, "Vol": 0.18, "Beta": 0.81, "ROE": 0.485, "YoY_Rev_%": 8.2,  "YoY_PAT_%": 10.5, "DE_Ratio": 0.04, "Moat_Score": 9.0, "OI_Signal": "Short Covering", "News_Sent": +0.28, "News_Headline": "USD/INR strength cushions IT export margins despite cautious US BFSI spend.", "Key_Products": "Enterprise AI Cloud, BaNCS, Ignio Cognitive Automation"},
+    {"Ticker": "HDFCBANK.NS",   "Company": "HDFC Bank",                "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "Banking & Finance",   "Spot": 1742.0, "Lot_Size": 650,  "Base_Ret": 0.142, "Vol": 0.19, "Beta": 0.93, "ROE": 0.169, "YoY_Rev_%": 16.5, "YoY_PAT_%": 17.8, "DE_Ratio": 1.10, "Moat_Score": 9.2, "OI_Signal": "Long Unwinding", "News_Sent": -0.18, "News_Headline": "Bank Nifty sees mild profit booking after multi-day private bank rally.", "Key_Products": "Retail & Corporate Lending, PayZapp, SmartHub Vyapar"},
     {"Ticker": "ICICIBANK.NS",  "Company": "ICICI Bank",               "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "Banking & Finance",   "Spot": 1296.0, "Lot_Size": 700,  "Base_Ret": 0.168, "Vol": 0.21, "Beta": 1.06, "ROE": 0.186, "YoY_Rev_%": 18.2, "YoY_PAT_%": 21.4, "DE_Ratio": 1.05, "Moat_Score": 9.3, "OI_Signal": "Long Unwinding", "News_Sent": -0.12, "News_Headline": "Strong Q2 NIM resilience offsets near-term F&O long unwinding in private lenders.", "Key_Products": "iMobile Pay, InstaBIZ, Treasury & Wealth Management"},
     {"Ticker": "INFY.NS",       "Company": "Infosys Limited",          "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "IT & AI Services",    "Spot": 1865.0, "Lot_Size": 400,  "Base_Ret": 0.144, "Vol": 0.20, "Beta": 0.87, "ROE": 0.318, "YoY_Rev_%": 7.9,  "YoY_PAT_%": 9.8,  "DE_Ratio": 0.08, "Moat_Score": 8.8, "OI_Signal": "Short Covering", "News_Sent": +0.34, "News_Headline": "Topaz GenAI deal pipeline & rupee depreciation support intraday bounce setup.", "Key_Products": "Topaz GenAI Suite, Finacle Core Banking, Cobalt Cloud"},
     {"Ticker": "LT.NS",         "Company": "Larsen & Toubro",          "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "Infrastructure & EPC","Spot": 3640.0, "Lot_Size": 150,  "Base_Ret": 0.182, "Vol": 0.23, "Beta": 1.12, "ROE": 0.155, "YoY_Rev_%": 19.4, "YoY_PAT_%": 22.1, "DE_Ratio": 0.65, "Moat_Score": 9.4, "OI_Signal": "Long Buildup",   "News_Sent": +0.58, "News_Headline": "Heavy domestic capex & green hydrogen order inflows sustain bullish trend.", "Key_Products": "Heavy EPC, Green Hydrogen, Defense & Semiconductor Design"},
     {"Ticker": "BHARTIARTL.NS", "Company": "Bharti Airtel",            "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "Telecom & Digital",   "Spot": 1645.0, "Lot_Size": 475,  "Base_Ret": 0.176, "Vol": 0.21, "Beta": 0.89, "ROE": 0.152, "YoY_Rev_%": 15.8, "YoY_PAT_%": 38.5, "DE_Ratio": 1.35, "Moat_Score": 9.1, "OI_Signal": "Long Buildup",   "News_Sent": +0.52, "News_Headline": "ARPU expansion & Nxtra data center demand keep Airtel above 20-EMA support.", "Key_Products": "5G Plus, Airtel Xstream Fiber, Nxtra Data Centers"},
     {"Ticker": "SUNPHARMA.NS",  "Company": "Sun Pharmaceutical",       "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "Pharma & Healthcare", "Spot": 1820.0, "Lot_Size": 350,  "Base_Ret": 0.156, "Vol": 0.17, "Beta": 0.64, "ROE": 0.172, "YoY_Rev_%": 12.6, "YoY_PAT_%": 18.9, "DE_Ratio": 0.05, "Moat_Score": 8.9, "OI_Signal": "Long Buildup",   "News_Sent": +0.44, "News_Headline": "Defensive pharma rotation & US specialty dermatology growth attract buyers.", "Key_Products": "Ilumya, Winlevi Specialty Dermatology & Global Generics"},
-    {"Ticker": "M&M.NS",        "Company": "Mahindra & Mahindra",      "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "Automobiles & EV",    "Spot": 2910.0, "Lot_Size": 175,  "Base_Ret": 0.198, "Vol": 0.25, "Beta": 1.09, "ROE": 0.184, "YoY_Rev_%": 16.9, "YoY_PAT_%": 24.6, "DE_Ratio": 0.45, "Moat_Score": 9.0, "OI_Signal": "Short Buildup",  "News_Sent": -0.46, "News_Headline": "Auto index slips 1.07% on crude & inflation worries; OEMs see short buildup.", "Key_Products": "Born Electric SUVs (BE 6/XEV 9e), Swaraj Farm Tractors"},
+    {"Ticker": "M&M.NS",        "Company": "Mahindra & Mahindra",      "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "Automobiles & EV",    "Spot": 2910.0, "Lot_Size": 175,  "Base_Ret": 0.198, "Vol": 0.25, "Beta": 1.09, "ROE": 0.184, "YoY_Rev_%": 16.9, "YoY_PAT_%": 24.6, "DE_Ratio": 0.45, "Moat_Score": 9.0, "OI_Signal": "Short Buildup",  "News_Sent": -0.46, "News_Headline": "Auto index slips on crude & inflation worries; OEMs see short buildup.", "Key_Products": "Born Electric SUVs (BE 6/XEV 9e), Swaraj Farm Tractors"},
     {"Ticker": "HAL.NS",        "Company": "Hindustan Aeronautics",    "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "Aerospace & Defense", "Spot": 4390.0, "Lot_Size": 150,  "Base_Ret": 0.228, "Vol": 0.32, "Beta": 1.21, "ROE": 0.268, "YoY_Rev_%": 18.5, "YoY_PAT_%": 26.8, "DE_Ratio": 0.00, "Moat_Score": 9.7, "OI_Signal": "Long Buildup",   "News_Sent": +0.78, "News_Headline": "Tejas Mk1A delivery ramp & geopolitical defense spending fuel strong OI buildup.", "Key_Products": "Tejas Mk1A Fighter, Prachand LCH, Aero-Engines & MRO"},
     {"Ticker": "BEL.NS",        "Company": "Bharat Electronics",       "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "Aerospace & Defense", "Spot": 304.0,  "Lot_Size": 1425, "Base_Ret": 0.215, "Vol": 0.28, "Beta": 1.14, "ROE": 0.245, "YoY_Rev_%": 17.8, "YoY_PAT_%": 25.2, "DE_Ratio": 0.00, "Moat_Score": 9.3, "OI_Signal": "Long Buildup",   "News_Sent": +0.71, "News_Headline": "Fresh radar & electronic warfare order wins drive breakout above intraday VWAP.", "Key_Products": "AESA Radars, Electronic Warfare, Akash Missile Systems"},
     {"Ticker": "NTPC.NS",       "Company": "NTPC Limited",             "Asset_Class": "Indian Equity", "Segment": "Large Cap", "Sector": "Power & Green Energy","Spot": 392.0,  "Lot_Size": 1500, "Base_Ret": 0.154, "Vol": 0.20, "Beta": 0.84, "ROE": 0.135, "YoY_Rev_%": 10.4, "YoY_PAT_%": 15.6, "DE_Ratio": 1.40, "Moat_Score": 8.5, "OI_Signal": "Long Buildup",   "News_Sent": +0.41, "News_Headline": "Peak power demand & NTPC Green BESS storage tenders support steady accumulation.", "Key_Products": "76 GW Thermal + NTPC Green Solar/BESS Utility Scale"},
-    {"Ticker": "TRENT.NS",      "Company": "Trent Limited (Zudio)",    "Asset_Class": "Indian Equity", "Segment": "Mid Cap",   "Sector": "Consumer & Retail",   "Spot": 6480.0, "Lot_Size": 100,  "Base_Ret": 0.242, "Vol": 0.31, "Beta": 1.05, "ROE": 0.285, "YoY_Rev_%": 39.4, "YoY_PAT_%": 46.2, "DE_Ratio": 0.18, "Moat_Score": 9.4, "OI_Signal": "Short Buildup",  "News_Sent": -0.35, "News_Headline": "Consumer durables & discretionary retail dip 0.60% amid high-PE profit taking.", "Key_Products": "Zudio Fast-Fashion Stores, Westside, Star Bazaar"},
+    {"Ticker": "TRENT.NS",      "Company": "Trent Limited (Zudio)",    "Asset_Class": "Indian Equity", "Segment": "Mid Cap",   "Sector": "Consumer & Retail",   "Spot": 6480.0, "Lot_Size": 100,  "Base_Ret": 0.242, "Vol": 0.31, "Beta": 1.05, "ROE": 0.285, "YoY_Rev_%": 39.4, "YoY_PAT_%": 46.2, "DE_Ratio": 0.18, "Moat_Score": 9.4, "OI_Signal": "Short Buildup",  "News_Sent": -0.35, "News_Headline": "Consumer durables & discretionary retail dip amid high-PE profit taking.", "Key_Products": "Zudio Fast-Fashion Stores, Westside, Star Bazaar"},
     {"Ticker": "DIXON.NS",      "Company": "Dixon Technologies",       "Asset_Class": "Indian Equity", "Segment": "Mid Cap",   "Sector": "Electronics & EMS",   "Spot": 14850.0,"Lot_Size": 50,   "Base_Ret": 0.254, "Vol": 0.34, "Beta": 1.18, "ROE": 0.242, "YoY_Rev_%": 54.0, "YoY_PAT_%": 61.5, "DE_Ratio": 0.22, "Moat_Score": 9.1, "OI_Signal": "Long Buildup",   "News_Sent": +0.64, "News_Headline": "54% YoY revenue surge & smartphone PLI export ramp attract momentum buyers.", "Key_Products": "Smartphones (PLI), Laptops, Display Modules & Hearables"},
     {"Ticker": "PERSISTENT.NS", "Company": "Persistent Systems",       "Asset_Class": "Indian Equity", "Segment": "Mid Cap",   "Sector": "IT & AI Services",    "Spot": 5620.0, "Lot_Size": 100,  "Base_Ret": 0.224, "Vol": 0.29, "Beta": 1.08, "ROE": 0.238, "YoY_Rev_%": 18.6, "YoY_PAT_%": 24.8, "DE_Ratio": 0.03, "Moat_Score": 9.0, "OI_Signal": "Long Buildup",   "News_Sent": +0.55, "News_Headline": "SASVA GenAI enterprise platform wins outpace tier-1 IT peers in Q2.", "Key_Products": "SASVA GenAI Engineering Platform, Cloud & SaaS Product Dev"},
     {"Ticker": "CGPOWER.NS",    "Company": "CG Power & Industrial",    "Asset_Class": "Indian Equity", "Segment": "Mid Cap",   "Sector": "Capital Goods & Semi","Spot": 745.0,  "Lot_Size": 850,  "Base_Ret": 0.222, "Vol": 0.30, "Beta": 1.12, "ROE": 0.295, "YoY_Rev_%": 24.5, "YoY_PAT_%": 28.9, "DE_Ratio": 0.01, "Moat_Score": 9.2, "OI_Signal": "Long Buildup",   "News_Sent": +0.49, "News_Headline": "Transformer backlog & Sanand OSAT semiconductor milestone drive bullish engulfing.", "Key_Products": "Power Transformers, Railway Propulsion & OSAT Chip Packaging"},
@@ -332,7 +381,7 @@ NSE_MASTER_DATA = [
     {"Ticker": "KPITTECH.NS",   "Company": "KPIT Technologies",        "Asset_Class": "Indian Equity", "Segment": "Small Cap", "Sector": "Automobiles & EV",    "Spot": 1490.0, "Lot_Size": 775,  "Base_Ret": 0.246, "Vol": 0.33, "Beta": 1.16, "ROE": 0.284, "YoY_Rev_%": 24.8, "YoY_PAT_%": 33.6, "DE_Ratio": 0.02, "Moat_Score": 9.3, "OI_Signal": "Short Covering", "News_Sent": +0.22, "News_Headline": "Global SDV software contracts offset near-term EV auto sector pullback.", "Key_Products": "Software-Defined Vehicle (SDV) OS, Autonomous & EV Powertrain"},
     {"Ticker": "KAYNES.NS",     "Company": "Kaynes Technology India",  "Asset_Class": "Indian Equity", "Segment": "Small Cap", "Sector": "Electronics & EMS",   "Spot": 5890.0, "Lot_Size": 100,  "Base_Ret": 0.262, "Vol": 0.36, "Beta": 1.24, "ROE": 0.148, "YoY_Rev_%": 46.5, "YoY_PAT_%": 54.2, "DE_Ratio": 0.19, "Moat_Score": 9.1, "OI_Signal": "Long Buildup",   "News_Sent": +0.66, "News_Headline": "54% PAT growth & OSAT chip packaging ramp trigger inside-bar breakout.", "Key_Products": "IoT PCBA, High-Density PCBs & Sanand OSAT Semiconductor Plant"},
     {"Ticker": "DATAPATTNS.NS", "Company": "Data Patterns (India)",    "Asset_Class": "Indian Equity", "Segment": "Small Cap", "Sector": "Aerospace & Defense", "Spot": 2480.0, "Lot_Size": 125,  "Base_Ret": 0.238, "Vol": 0.35, "Beta": 1.19, "ROE": 0.156, "YoY_Rev_%": 28.4, "YoY_PAT_%": 32.1, "DE_Ratio": 0.00, "Moat_Score": 9.4, "OI_Signal": "Long Buildup",   "News_Sent": +0.74, "News_Headline": "41% EBITDA margin & radar electronics orders put stock in high-momentum zone.", "Key_Products": "BrahMos Fire Control, Airborne Radars & Satellite Electronics"},
-    {"Ticker": "CDSL.NS",       "Company": "Central Depository (CDSL)","Asset_Class": "Indian Equity", "Segment": "Small Cap", "Sector": "Capital Markets",     "Spot": 1685.0, "Lot_Size": 475,  "Base_Ret": 0.218, "Vol": 0.29, "Beta": 1.08, "ROE": 0.312, "YoY_Rev_%": 31.5, "YoY_PAT_%": 36.8, "DE_Ratio": 0.00, "Moat_Score": 9.6, "OI_Signal": "Long Buildup",   "News_Sent": +0.61, "News_Headline": "BSE (+0.73%) & capital market infrastructure stocks buck broader selloff.", "Key_Products": "14 Cr+ Demat Accounts Duopoly, e-Voting & KYC Repository"},
+    {"Ticker": "CDSL.NS",       "Company": "Central Depository (CDSL)","Asset_Class": "Indian Equity", "Segment": "Small Cap", "Sector": "Capital Markets",     "Spot": 1685.0, "Lot_Size": 475,  "Base_Ret": 0.218, "Vol": 0.29, "Beta": 1.08, "ROE": 0.312, "YoY_Rev_%": 31.5, "YoY_PAT_%": 36.8, "DE_Ratio": 0.00, "Moat_Score": 9.6, "OI_Signal": "Long Buildup",   "News_Sent": +0.61, "News_Headline": "BSE & capital market infrastructure stocks buck broader selloff.", "Key_Products": "14 Cr+ Demat Accounts Duopoly, e-Voting & KYC Repository"},
 ]
 
 CRYPTO_MASTER_DATA = [
@@ -354,7 +403,92 @@ UPCOMING_IPOS_DATA = [
 ]
 
 # ==========================================
-# 4. UNIVERSAL PDF GENERATOR (WORKS WITH ALL FPDF / FPDF2 VERSIONS)
+# 4. LIVE YAHOO FINANCE MARKET FEED ENGINE
+# ==========================================
+@st.cache_data(ttl=300, show_spinner=False)
+def fetch_live_market_snapshot(tickers_tuple: tuple):
+    meta = {
+        "nifty": 25144.30, "nifty_chg": -0.61,
+        "banknifty": 61034.10, "banknifty_chg": -0.79,
+        "brent": 96.0, "brent_chg": +0.85,
+        "usdinr": 94.25, "usdinr_chg": +0.12,
+        "is_live": False,
+        "timestamp": datetime.now().strftime("%d %b %Y, %I:%M:%S %p IST"),
+        "quotes": {},
+        "hist_returns": {}
+    }
+    if not YFINANCE_AVAILABLE:
+        return meta
+
+    macro_symbols = ["^NSEI", "^NSEBANK", "BZ=F", "INR=X"]
+    all_syms = list(dict.fromkeys(macro_symbols + list(tickers_tuple)))
+
+    try:
+        raw = yf.download(
+            tickers=all_syms,
+            period="1y",
+            interval="1d",
+            group_by="ticker",
+            auto_adjust=True,
+            threads=True,
+            progress=False
+        )
+        if raw is None or raw.empty:
+            return meta
+
+        live_hits = 0
+        for sym in all_syms:
+            try:
+                if isinstance(raw.columns, pd.MultiIndex):
+                    if sym not in raw.columns.get_level_values(0):
+                        continue
+                    close_s = raw[sym]["Close"].dropna()
+                else:
+                    close_s = raw["Close"].dropna()
+
+                if len(close_s) >= 2:
+                    last_px = float(close_s.iloc[-1])
+                    prev_px = float(close_s.iloc[-2])
+                    chg_pct = ((last_px / prev_px) - 1.0) * 100.0
+                    rets = close_s.pct_change().dropna()
+                    ann_vol = float(rets.std() * np.sqrt(252)) if len(rets) > 20 else None
+                    ann_ret = float(((close_s.iloc[-1] / close_s.iloc[0]) ** (252.0 / max(len(close_s), 60))) - 1.0) if len(close_s) > 40 else None
+
+                    meta["quotes"][sym] = {
+                        "spot": round(last_px, 2),
+                        "chg_pct": round(chg_pct, 2),
+                        "ann_vol": round(ann_vol, 4) if ann_vol and ann_vol > 0.03 else None,
+                        "ann_ret": round(float(np.clip(ann_ret, 0.06, 0.45)), 4) if ann_ret is not None else None,
+                    }
+                    if len(rets) >= 60:
+                        meta["hist_returns"][sym] = rets.values[-250:]
+                    live_hits += 1
+            except Exception:
+                continue
+
+        if "^NSEI" in meta["quotes"]:
+            meta["nifty"] = meta["quotes"]["^NSEI"]["spot"]
+            meta["nifty_chg"] = meta["quotes"]["^NSEI"]["chg_pct"]
+        if "^NSEBANK" in meta["quotes"]:
+            meta["banknifty"] = meta["quotes"]["^NSEBANK"]["spot"]
+            meta["banknifty_chg"] = meta["quotes"]["^NSEBANK"]["chg_pct"]
+        if "BZ=F" in meta["quotes"]:
+            meta["brent"] = meta["quotes"]["BZ=F"]["spot"]
+            meta["brent_chg"] = meta["quotes"]["BZ=F"]["chg_pct"]
+        if "INR=X" in meta["quotes"]:
+            meta["usdinr"] = meta["quotes"]["INR=X"]["spot"]
+            meta["usdinr_chg"] = meta["quotes"]["INR=X"]["chg_pct"]
+
+        if live_hits >= 5:
+            meta["is_live"] = True
+            meta["timestamp"] = datetime.now().strftime("%d %b %Y, %I:%M:%S %p IST")
+    except Exception:
+        pass
+
+    return meta
+
+# ==========================================
+# 5. UNIVERSAL PDF GENERATOR (ORANGE & WHITE HEADER)
 # ==========================================
 def generate_investment_memo_pdf(
     macro_regime: str, brent_usd: float, usd_inr: float, solver_choice: str, horizon_label: str,
@@ -379,14 +513,14 @@ def generate_investment_memo_pdf(
             .decode("latin-1")
         )
 
-    pdf.set_fill_color(15, 23, 42)
+    pdf.set_fill_color(234, 88, 12)
     pdf.rect(0, 0, 210, 35, "F")
     pdf.set_text_color(255, 255, 255)
     pdf.set_font("Helvetica", "B", 15)
     pdf.set_xy(12, 7)
     pdf.cell(0, 7, clean_txt("AETHERIS QUANT // OR - Quantitative Investment Memorandum"), ln=1)
     pdf.set_font("Helvetica", "", 8.5)
-    pdf.set_text_color(148, 163, 184)
+    pdf.set_text_color(255, 247, 237)
     pdf.set_x(12)
     gen_date = datetime.now().strftime("%d %b %Y, %I:%M %p IST")
     pdf.cell(0, 5, clean_txt(f"Generated: {gen_date}  |  Regime: {macro_regime}"), ln=1)
@@ -397,7 +531,7 @@ def generate_investment_memo_pdf(
     pdf.set_text_color(15, 23, 42)
     pdf.set_font("Helvetica", "B", 11)
     pdf.cell(0, 7, clean_txt("1. Executive Portfolio & Macro-Adjusted Capital Deployment"), ln=1)
-    pdf.set_draw_color(59, 130, 246)
+    pdf.set_draw_color(249, 115, 22)
     pdf.line(12, pdf.get_y(), 198, pdf.get_y())
     pdf.ln(3)
 
@@ -412,7 +546,7 @@ def generate_investment_memo_pdf(
 
     pdf.set_font("Helvetica", "", 8.5)
     for k1, v1, k2, v2 in summary_rows:
-        pdf.set_fill_color(241, 245, 249)
+        pdf.set_fill_color(255, 247, 237)
         pdf.set_text_color(71, 85, 105)
         pdf.cell(48, 6.5, clean_txt(f" {k1}"), border=1, fill=True)
         pdf.set_text_color(15, 23, 42)
@@ -448,7 +582,7 @@ def generate_investment_memo_pdf(
 
     headers = ["Ticker", "Company / Asset", "Class", "Macro", "Net CAGR", "Weight", "Deploy Now (INR)", "SIP/Mo (INR)"]
     col_widths = [24, 44, 20, 17, 19, 17, 25, 20]
-    pdf.set_fill_color(15, 23, 42)
+    pdf.set_fill_color(234, 88, 12)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font("Helvetica", "B", 8)
     for h, w in zip(headers, col_widths):
@@ -458,7 +592,7 @@ def generate_investment_memo_pdf(
     pdf.set_font("Helvetica", "", 8)
     for idx, row in winners_df.iterrows():
         fill = idx % 2 == 0
-        pdf.set_fill_color(248, 250, 252) if fill else pdf.set_fill_color(255, 255, 255)
+        pdf.set_fill_color(255, 247, 237) if fill else pdf.set_fill_color(255, 255, 255)
         pdf.set_text_color(15, 23, 42)
         vals = [
             row["Ticker"],
@@ -494,7 +628,7 @@ def generate_investment_memo_pdf(
     return bytes(raw_out)
 
 # ==========================================
-# 5. BLACK-SCHOLES OPTION & MULTI-LEG SPREAD PRICER
+# 6. BLACK-SCHOLES OPTION & MULTI-LEG SPREAD PRICER
 # ==========================================
 def black_scholes_call_put(S: float, K: float, T_years: float, r: float, sigma: float, opt_type: str = "CE"):
     T = max(T_years, 1e-5)
@@ -592,11 +726,12 @@ def evaluate_option_structures(sym: str, company: str, spot: float, lot: int, st
     return structures
 
 # ==========================================
-# 6. WALK-FORWARD STACKING ML + MACRO SHOCK ENGINE
+# 7. WALK-FORWARD STACKING ML + MACRO SHOCK ENGINE
 # ==========================================
 @st.cache_data
 def run_long_term_portfolio_research(df_input: pd.DataFrame, horizon_years: float, min_quality_score: float,
-                                     apply_indian_tax: bool, macro_regime_key: str, brent_usd: float, usd_inr: float):
+                                     apply_indian_tax: bool, macro_regime_key: str, brent_usd: float, usd_inr: float,
+                                     hist_returns_map: dict):
     rng = np.random.default_rng(42)
     df = df_input.copy().reset_index(drop=True)
     macro_cfg = MACRO_ENVIRONMENTS[macro_regime_key]
@@ -611,10 +746,16 @@ def run_long_term_portfolio_research(df_input: pd.DataFrame, horizon_years: floa
     returns_matrix = np.zeros((n_days, n_assets))
 
     for i, row in df.iterrows():
+        ticker = row["Ticker"]
         daily_mu = row["Base_Ret"] / 252.0
         daily_vol = (row["Vol"] * vol_mult) / np.sqrt(252.0)
         factor_shock = (0.65 * (crypto_factor - 0.00115) + 0.25 * (equity_factor - 0.00058)) if row["Asset_Class"] == "Cryptocurrency" else (row["Beta"] * (equity_factor - 0.00058))
-        returns_matrix[:, i] = daily_mu + factor_shock + rng.normal(0, daily_vol * 0.78, n_days)
+        sim_series = daily_mu + factor_shock + rng.normal(0, daily_vol * 0.78, n_days)
+        if ticker in hist_returns_map and len(hist_returns_map[ticker]) >= 60:
+            real_tail = hist_returns_map[ticker]
+            k_len = min(len(real_tail), n_days)
+            sim_series[-k_len:] = real_tail[-k_len:] * vol_mult
+        returns_matrix[:, i] = sim_series
 
     prices_df = pd.DataFrame(100 * np.exp(np.cumsum(returns_matrix, axis=0)), columns=df["Ticker"])
     ret_df = pd.DataFrame(returns_matrix, columns=df["Ticker"])
@@ -698,7 +839,7 @@ def run_long_term_portfolio_research(df_input: pd.DataFrame, horizon_years: floa
     return df, df_qual, cov_matrix, q_rets
 
 # ==========================================
-# 7. 4 OPERATIONS RESEARCH PORTFOLIO SOLVERS
+# 8. 4 OPERATIONS RESEARCH PORTFOLIO SOLVERS
 # ==========================================
 def solve_portfolio_or(solver_type: str, df_q: pd.DataFrame, cov: np.ndarray, q_rets: pd.DataFrame,
                        target_ret: float, w_max: float, max_k: int, sector_cap: float, crypto_cap: float, rf_rate: float):
@@ -819,11 +960,12 @@ def solve_portfolio_or(solver_type: str, df_q: pd.DataFrame, cov: np.ndarray, q_
     return weights
 
 # ==========================================
-# 8. NEXT-DAY INTRADAY PATTERN + NEWS ML & OPTIONS KNAPSACK
+# 9. NEXT-DAY INTRADAY PATTERN + NEWS ML & OPTIONS KNAPSACK
 # ==========================================
 @st.cache_data
 def run_next_day_intraday_and_options_ai(df_stocks: pd.DataFrame, brent_usd: float, usd_inr: float,
-                                         macro_regime_key: str, rf_rate: float, days_to_expiry: int, strategy_filter: str):
+                                         macro_regime_key: str, rf_rate: float, days_to_expiry: int, strategy_filter: str,
+                                         nifty_spot: float, banknifty_spot: float):
     rng = np.random.default_rng(108)
     brent_delta_10 = (brent_usd - BASE_BRENT_USD) / 10.0
     fx_delta_1 = usd_inr - BASE_USD_INR
@@ -899,7 +1041,8 @@ def run_next_day_intraday_and_options_ai(df_stocks: pd.DataFrame, brent_usd: flo
 
         intraday_rows.append({
             "Ticker": sym, "Company": row["Company"], "Sector": row["Sector"],
-            "Spot_INR": round(spot, 2), "Chart_Pattern": pat_name, "FO_OI_Signal": row["OI_Signal"],
+            "Spot_INR": round(spot, 2), "Day_Chg_%": row.get("Day_Chg_%", 0.0),
+            "Chart_Pattern": pat_name, "FO_OI_Signal": row["OI_Signal"],
             "News_Sentiment": round(news_s, 2), "Signal": direction, "Pred_Move_%": round(pred_move * 100, 2),
             "Win_Prob_%": round(win_prob, 1), "Target_INR": round(pred_next_spot, 2),
             "StopLoss_INR": round(stop_loss, 2), "Catalyst_News": row["News_Headline"]
@@ -911,9 +1054,9 @@ def run_next_day_intraday_and_options_ai(df_stocks: pd.DataFrame, brent_usd: flo
             best_per_company_rows.append(max(structs, key=lambda x: x["Expected_EV_Lot"]))
 
     index_setups = [
-        {"Ticker": "NIFTY", "Company": "Nifty 50 Index", "Spot": 25144.30, "Lot": 65, "Step": 50,
+        {"Ticker": "NIFTY", "Company": "Nifty 50 Index", "Spot": nifty_spot, "Lot": 65, "Step": 50,
          "Move": -0.0058 if brent_usd >= 98 else +0.0064, "Prob": 68.5, "IV": 0.145 * vol_mult},
-        {"Ticker": "BANKNIFTY", "Company": "Bank Nifty Index", "Spot": 61034.10, "Lot": 30, "Step": 100,
+        {"Ticker": "BANKNIFTY", "Company": "Bank Nifty Index", "Spot": banknifty_spot, "Lot": 30, "Step": 100,
          "Move": +0.0078 if "Rate Hike" in macro_regime_key else -0.0072, "Prob": 66.5, "IV": 0.175 * vol_mult},
     ]
     for idx_s in index_setups:
@@ -947,11 +1090,39 @@ def solve_options_knapsack_or(df_opt: pd.DataFrame, options_budget_inr: float, m
     return selected
 
 # ==========================================
-# 9. SIDEBAR CONTROLS (CLEAN, ZERO EMOJIS)
+# 10. FETCH LIVE MARKET FEED & MERGE INTO UNIVERSE
+# ==========================================
+all_tickers_tuple = tuple([d["Ticker"] for d in NSE_MASTER_DATA] + [d["Ticker"] for d in CRYPTO_MASTER_DATA])
+live_snap = fetch_live_market_snapshot(all_tickers_tuple)
+
+def enrich_with_live_quotes(records: list, quotes_dict: dict) -> pd.DataFrame:
+    df_out = pd.DataFrame(records)
+    spots, chgs, vols, rets = [], [], [], []
+    for _, r in df_out.iterrows():
+        q = quotes_dict.get(r["Ticker"], {})
+        spots.append(q.get("spot") if q.get("spot") is not None else r["Spot"])
+        chgs.append(q.get("chg_pct") if q.get("chg_pct") is not None else 0.0)
+        vols.append(q.get("ann_vol") if q.get("ann_vol") is not None else r["Vol"])
+        rets.append(q.get("ann_ret") if q.get("ann_ret") is not None else r["Base_Ret"])
+    df_out["Spot"] = spots
+    df_out["Day_Chg_%"] = chgs
+    df_out["Vol"] = vols
+    df_out["Base_Ret"] = rets
+    return df_out
+
+df_stocks = enrich_with_live_quotes(NSE_MASTER_DATA, live_snap["quotes"])
+df_crypto = enrich_with_live_quotes(CRYPTO_MASTER_DATA, live_snap["quotes"])
+
+# ==========================================
+# 11. SIDEBAR CONTROLS WITH LIVE FEED REFRESH
 # ==========================================
 with st.sidebar:
     st.markdown("## AETHERIS QUANT // OR")
-    st.caption("Autonomous Equity, Macro & Derivatives Engine")
+    st.caption("Live Multi-Asset, Macro & Derivatives Engine")
+
+    if st.button("Refresh Live Market Feed", width="stretch"):
+        fetch_live_market_snapshot.clear()
+        st.rerun()
 
     st.markdown("### 01. Quick-Start Strategy Profile")
     preset_choice = st.selectbox(
@@ -974,8 +1145,10 @@ with st.sidebar:
         regime_idx = list(MACRO_ENVIRONMENTS.keys()).index(p_cfg["regime"])
         macro_regime = st.selectbox("Geopolitical / Rate Scenario", list(MACRO_ENVIRONMENTS.keys()), index=regime_idx)
         macro_cfg = MACRO_ENVIRONMENTS[macro_regime]
-        brent_usd = st.slider("Brent Crude Oil ($/bbl)", 65.0, 150.0, float(macro_cfg["default_brent"]), 1.0)
-        usd_inr = st.slider("USD/INR Exchange Rate (INR/$)", 88.0, 105.0, float(macro_cfg["default_usdinr"]), 0.25)
+        default_brent_val = float(np.clip(live_snap["brent"], 65.0, 150.0)) if "Normal" in macro_regime else float(macro_cfg["default_brent"])
+        default_fx_val = float(np.clip(live_snap["usdinr"], 82.0, 105.0)) if "Normal" in macro_regime else float(macro_cfg["default_usdinr"])
+        brent_usd = st.slider("Brent Crude Oil ($/bbl)", 65.0, 150.0, default_brent_val, 0.5)
+        usd_inr = st.slider("USD/INR Exchange Rate (INR/$)", 82.0, 105.0, default_fx_val, 0.25)
         extra_tranche_cut = max(0.0, (brent_usd - 105.0) * 0.005) + max(0.0, (usd_inr - 95.5) * 0.03)
         rec_deploy = float(np.clip(macro_cfg["deploy_now_pct"] - extra_tranche_cut, 0.25, 1.0))
         deploy_now_pct = st.slider("Deploy Lump-Sum Now (%)", 20, 100, int(round(rec_deploy * 100 / 5) * 5), 5) / 100.0
@@ -1001,16 +1174,15 @@ with st.sidebar:
         apply_indian_tax = st.toggle("Optimize Post-Tax (31.2% Crypto / 12.5% Equity)", value=True)
 
 # ==========================================
-# 10. EXECUTE FULL PIPELINE
+# 12. EXECUTE FULL PIPELINE
 # ==========================================
-df_stocks = pd.DataFrame(NSE_MASTER_DATA)
-df_combined = pd.concat([df_stocks, pd.DataFrame(CRYPTO_MASTER_DATA)], ignore_index=True) if include_crypto else df_stocks.copy()
+df_combined = pd.concat([df_stocks, df_crypto], ignore_index=True) if include_crypto else df_stocks.copy()
 
 liquid_yield_pct = macro_cfg["rbi_repo_pct"] + 1.15
 rf_rate = liquid_yield_pct / 100.0
 
 df_all_scored, df_qualified, cov_matrix, q_rets = run_long_term_portfolio_research(
-    df_combined, horizon_years, 65.0, apply_indian_tax, macro_regime, brent_usd, usd_inr
+    df_combined, horizon_years, 65.0, apply_indian_tax, macro_regime, brent_usd, usd_inr, live_snap["hist_returns"]
 )
 active_crypto_cap = min(0.95, effective_crypto_cap / max(0.05, (1.0 - ipo_sleeve_pct))) if include_crypto else 0.0
 opt_weights = solve_portfolio_or(solver_choice, df_qualified, cov_matrix, q_rets, target_cagr, w_max, max_k, sector_cap, active_crypto_cap, rf_rate)
@@ -1051,7 +1223,8 @@ avg_ml_acc = float(df_all_scored["ML_Dir_Acc_%"].mean())
 avg_oos_r2 = float(df_all_scored["OOS_R2"].mean())
 
 df_intraday, df_best_options, df_all_structures = run_next_day_intraday_and_options_ai(
-    df_stocks, brent_usd, usd_inr, macro_regime, rf_rate, days_to_expiry, strategy_filter
+    df_stocks, brent_usd, usd_inr, macro_regime, rf_rate, days_to_expiry, strategy_filter,
+    live_snap["nifty"], live_snap["banknifty"]
 )
 df_opt_knapsack = solve_options_knapsack_or(df_best_options, options_budget_inr, max_lots_per_contract=max_lots_contract)
 
@@ -1066,17 +1239,28 @@ if winners.empty:
     winners = df_qualified.head(5).copy()
 
 # ==========================================
-# 11. LIVE ANIMATED TICKER, BRAND HEADER & KPI STRIP
+# 13. LIVE ANIMATED TICKER, ORANGE & WHITE HEADER & KPI STRIP
 # ==========================================
+def fmt_tick(label: str, price_str: str, chg: float):
+    cls = "tick-up" if chg >= 0 else "tick-down"
+    return f"<span class='{cls}'>{label}: {price_str} ({chg:+.2f}%)</span>"
+
+live_stock_ticks = "".join([
+    fmt_tick(r["Ticker"].replace(".NS", ""), f"INR {r['Spot']:,.1f}", r["Day_Chg_%"])
+    for _, r in df_stocks.head(8).iterrows()
+])
+live_crypto_ticks = "".join([
+    fmt_tick(r["Ticker"].replace("-USD", ""), f"${r['Spot']:,.1f}", r["Day_Chg_%"])
+    for _, r in df_crypto.head(3).iterrows()
+])
+
 ticker_items = (
-    f"<span class='tick-neutral'>NIFTY 50: 25,144.30 (-0.61%)</span>"
-    f"<span class='tick-neutral'>BANK NIFTY: 61,034.10 (-0.79%)</span>"
-    f"<span style='color:#fbbf24;font-weight:700;margin-right:28px;'>BRENT CRUDE: ${brent_usd:.1f}/bbl</span>"
-    f"<span class='tick-neutral'>USD/INR: {usd_inr:.2f}</span>"
-    f"<span class='tick-up'>RBI REPO: {macro_cfg['rbi_repo_pct']:.2f}%</span>"
-    f"<span class='tick-up'>TOP ALPHA: {winners.iloc[0]['Ticker'].replace('.NS','')} ({winners.iloc[0]['Effective_CAGR']*100:.1f}% CAGR)</span>"
-    f"<span class='tick-up'>INTRADAY LEAD: {top_intraday_pick['Ticker']} ({top_intraday_pick['Pred_Move_%']:+.2f}%)</span>"
-    f"<span class='tick-up'>OPTIONS LEAD: {top_option_pick['Ticker']} {top_option_pick['Strategy_Structure']} (+INR {top_option_pick['Est_Profit_1_Lot']:,.0f}/lot)</span>"
+    fmt_tick("NIFTY 50", f"{live_snap['nifty']:,.2f}", live_snap["nifty_chg"])
+    + fmt_tick("BANK NIFTY", f"{live_snap['banknifty']:,.2f}", live_snap["banknifty_chg"])
+    + fmt_tick("BRENT CRUDE", f"${brent_usd:.2f}/bbl", live_snap["brent_chg"])
+    + fmt_tick("USD/INR", f"{usd_inr:.2f}", live_snap["usdinr_chg"])
+    + live_stock_ticks
+    + live_crypto_ticks
 )
 st.markdown(f"""
 <div class="ticker-wrap">
@@ -1084,10 +1268,16 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("""
+feed_status_label = f"LIVE YAHOO FINANCE FEED | {live_snap['timestamp']}" if live_snap["is_live"] else f"CALIBRATED BASELINE FEED | {live_snap['timestamp']}"
+st.markdown(f"""
 <div class="brand-header">
-    <div class="brand-title">AETHERIS QUANT // OR</div>
-    <div class="brand-sub">Autonomous Equity, Tactical Hedging &amp; Enterprise Risk Intelligence System</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+            <div class="brand-title">AETHERIS QUANT // OR</div>
+            <div class="brand-sub">Autonomous Equity, Tactical Hedging &amp; Enterprise Risk Intelligence System</div>
+        </div>
+        <div class="live-badge">{feed_status_label}</div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1102,7 +1292,7 @@ st.markdown(f"""
 k1, k2, k3, k4 = st.columns(4)
 with k1:
     st.markdown(f"""
-    <div class="metric-card card-cyan">
+    <div class="metric-card card-orange-1">
         <div class="metric-label">Expected Net Annual CAGR</div>
         <div class="metric-value">{total_port_cagr*100:.2f}%</div>
         <div class="metric-sub">Maturity: INR {projected_val:,.0f} (+INR {projected_profit:,.0f})</div>
@@ -1116,14 +1306,14 @@ with k2:
     </div>""", unsafe_allow_html=True)
 with k3:
     st.markdown(f"""
-    <div class="metric-card card-violet">
+    <div class="metric-card card-orange-2">
         <div class="metric-label">Top Next-Day Intraday Signal</div>
         <div class="metric-value">{top_intraday_pick['Ticker']} ({top_intraday_pick['Pred_Move_%']:+.2f}%)</div>
         <div class="metric-sub">{top_intraday_pick['Signal']} | Win Prob: {top_intraday_pick['Win_Prob_%']:.1f}%</div>
     </div>""", unsafe_allow_html=True)
 with k4:
     st.markdown(f"""
-    <div class="metric-card card-rose">
+    <div class="metric-card card-emerald">
         <div class="metric-label">OR Options Basket Est. Profit</div>
         <div class="metric-value">+INR {knapsack_total_profit:,.0f}</div>
         <div class="metric-alert">Margin: INR {knapsack_total_cap:,.0f} | Theta: INR {knapsack_theta_day:,.0f}/day</div>
@@ -1132,7 +1322,7 @@ with k4:
 st.markdown("---")
 
 # ==========================================
-# 12. 7-TAB GRAPHICAL INSTITUTIONAL WORKSPACE
+# 14. 7-TAB ORANGE & WHITE WORKSPACE
 # ==========================================
 t1, t2, t3, t4, t5, t6, t7 = st.tabs([
     "01. Portfolio & Frontier Analytics",
@@ -1141,7 +1331,7 @@ t1, t2, t3, t4, t5, t6, t7 = st.tabs([
     "04. Next-Day Intraday AI",
     "05. War, Crude & FX Stress Matrix",
     "06. Rebalancing & Tax Blotter",
-    "07. Fundamental Screener & Math"
+    "07. Live Market Screener & Math"
 ])
 
 # --- TAB 1: LONG-TERM PORTFOLIO + GRAPHICAL FRONTIER, RADAR & SUNBURST ---
@@ -1149,11 +1339,12 @@ with t1:
     col_l, col_r = st.columns([1.3, 1])
     with col_l:
         st.subheader("OR-Optimized Multi-Asset Capital Allocation")
-        disp = winners[["Ticker", "Company", "Asset_Class", "Effective_CAGR", "Portfolio_Weight_%", "Allocation_INR", "Staged_Dip_Buy_INR_Mo", "Monthly_SIP_INR"]].copy()
+        disp = winners[["Ticker", "Company", "Spot", "Day_Chg_%", "Effective_CAGR", "Portfolio_Weight_%", "Allocation_INR", "Monthly_SIP_INR"]].copy()
+        disp["Spot"] = disp["Spot"].map("{:,.1f}".format)
+        disp["Day_Chg_%"] = disp["Day_Chg_%"].map("{:+.2f}%".format)
         disp["Effective_CAGR"] = (disp["Effective_CAGR"] * 100).map("{:.2f}%".format)
         disp["Portfolio_Weight_%"] = disp["Portfolio_Weight_%"].map("{:.2f}%".format)
         disp["Allocation_INR"] = disp["Allocation_INR"].map("INR {:,.0f}".format)
-        disp["Staged_Dip_Buy_INR_Mo"] = disp["Staged_Dip_Buy_INR_Mo"].map("INR {:,.0f}".format)
         disp["Monthly_SIP_INR"] = disp["Monthly_SIP_INR"].map("INR {:,.0f}".format)
         st.dataframe(disp, width="stretch", hide_index=True)
 
@@ -1166,7 +1357,7 @@ with t1:
 
         b1, b2 = st.columns(2)
         with b1:
-            csv_out = winners[["Ticker", "Company", "Asset_Class", "Segment", "Sector", "Macro_Alpha_%", "Conviction_Score", "Effective_CAGR", "Portfolio_Weight_%", "Allocation_INR", "Staged_Dip_Buy_INR_Mo", "Monthly_SIP_INR"]].to_csv(index=False).encode("utf-8")
+            csv_out = winners[["Ticker", "Company", "Asset_Class", "Segment", "Sector", "Spot", "Day_Chg_%", "Macro_Alpha_%", "Conviction_Score", "Effective_CAGR", "Portfolio_Weight_%", "Allocation_INR", "Monthly_SIP_INR"]].to_csv(index=False).encode("utf-8")
             st.download_button("Export Execution Plan (CSV)", data=csv_out, file_name="aetheris_quant_portfolio.csv", mime="text/csv", width="stretch")
         with b2:
             if FPDF_AVAILABLE:
@@ -1182,12 +1373,11 @@ with t1:
                 )
                 st.download_button("Export Institutional PDF Memo", data=pdf_bytes, file_name=f"Aetheris_Quant_Memo_{datetime.now().strftime('%Y%m%d')}.pdf", mime="application/pdf", width="stretch")
 
-        # Multi-Factor Radar Chart for Top 4 Selected Winners
         st.subheader("Top Winners Multi-Factor DNA Radar")
         top4 = winners.head(4)
         categories = ["Rev Growth", "PAT Growth", "ROE Strength", "Product Moat", "ML Conviction"]
         fig_rad = go.Figure()
-        radar_colors = ["#00f5d4", "#a78bfa", "#38bdf8", "#f472b6"]
+        radar_colors = ["#ea580c", "#f59e0b", "#0f172a", "#10b981"]
         for idx_r, r_row in top4.iterrows():
             vals = [
                 min(100, (r_row["YoY_Rev_%"] / 50.0) * 100),
@@ -1204,8 +1394,8 @@ with t1:
                 line=dict(color=radar_colors[idx_r % len(radar_colors)], width=2.2)
             ))
         fig_rad.update_layout(
-            polar=dict(bgcolor="#0c1220", radialaxis=dict(visible=True, range=[0, 100], gridcolor="#1e293b"), angularaxis=dict(gridcolor="#1e293b")),
-            template="plotly_dark", paper_bgcolor="#0c1220", height=320, margin=dict(l=30, r=30, t=25, b=20)
+            polar=dict(bgcolor="#ffffff", radialaxis=dict(visible=True, range=[0, 100], gridcolor="#fed7aa"), angularaxis=dict(gridcolor="#fed7aa")),
+            template="plotly_white", paper_bgcolor="#ffffff", height=320, margin=dict(l=30, r=30, t=25, b=20)
         )
         st.plotly_chart(fig_rad, width="stretch")
 
@@ -1222,11 +1412,11 @@ with t1:
 
         fig_w = go.Figure()
         fig_w.add_trace(go.Scatter(x=months, y=upper_band, mode="lines", line=dict(width=0), showlegend=False))
-        fig_w.add_trace(go.Scatter(x=months, y=lower_band, mode="lines", line=dict(width=0), fill="tonexty", fillcolor="rgba(0, 245, 212, 0.14)", name="Volatility Cone"))
-        fig_w.add_trace(go.Scatter(x=months, y=opt_curve, mode="lines", name="Aetheris OR Wealth", line=dict(color="#00f5d4", width=3)))
-        fig_w.add_trace(go.Scatter(x=months, y=nifty_curve, mode="lines", name="Nifty 50 Benchmark (12.5%)", line=dict(color="#a78bfa", dash="dash", width=2.2)))
+        fig_w.add_trace(go.Scatter(x=months, y=lower_band, mode="lines", line=dict(width=0), fill="tonexty", fillcolor="rgba(249, 115, 22, 0.14)", name="Volatility Cone"))
+        fig_w.add_trace(go.Scatter(x=months, y=opt_curve, mode="lines", name="Aetheris OR Wealth", line=dict(color="#ea580c", width=3)))
+        fig_w.add_trace(go.Scatter(x=months, y=nifty_curve, mode="lines", name="Nifty 50 Benchmark (12.5%)", line=dict(color="#0f172a", dash="dash", width=2.2)))
         fig_w.add_trace(go.Scatter(x=months, y=invested_line, mode="lines", name="Total Principal", line=dict(color="#94a3b8", dash="dot", width=1.6)))
-        fig_w.update_layout(template="plotly_dark", paper_bgcolor="#0c1220", plot_bgcolor="#0c1220", xaxis_title="Months", yaxis_title="Portfolio Value (INR)", height=310, margin=dict(l=15, r=15, t=20, b=15), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+        fig_w.update_layout(template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#ffffff", xaxis_title="Months", yaxis_title="Portfolio Value (INR)", height=310, margin=dict(l=15, r=15, t=20, b=15), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
         st.plotly_chart(fig_w, width="stretch")
 
         sb_df = winners[["Asset_Class", "Sector", "Ticker", "Allocation_INR"]].copy()
@@ -1236,8 +1426,8 @@ with t1:
         if dry_powder_inr > 0:
             sb_df = pd.concat([sb_df, pd.DataFrame([{"Asset_Class": "Liquid Reserve", "Sector": "Repo-Linked Debt", "Ticker": "Dry Powder", "Allocation_INR": dry_powder_inr}])], ignore_index=True)
 
-        fig_sb = px.sunburst(sb_df, path=["Asset_Class", "Sector", "Ticker"], values="Allocation_INR", title="Multi-Asset Capital Hierarchy (Class > Sector > Ticker)", color="Asset_Class", color_discrete_sequence=["#00f5d4", "#a78bfa", "#38bdf8", "#fbbf24"])
-        fig_sb.update_layout(template="plotly_dark", paper_bgcolor="#0c1220", height=320, margin=dict(l=10, r=10, t=35, b=10))
+        fig_sb = px.sunburst(sb_df, path=["Asset_Class", "Sector", "Ticker"], values="Allocation_INR", title="Multi-Asset Capital Hierarchy (Class > Sector > Ticker)", color="Asset_Class", color_discrete_sequence=["#f97316", "#fb923c", "#f59e0b", "#475569"])
+        fig_sb.update_layout(template="plotly_white", paper_bgcolor="#ffffff", height=320, margin=dict(l=10, r=10, t=35, b=10))
         st.plotly_chart(fig_sb, width="stretch")
 
     st.subheader("Markowitz Efficient Frontier & Cross-Asset Risk-Return Map")
@@ -1252,26 +1442,26 @@ with t1:
     fig_ef = go.Figure()
     fig_ef.add_trace(go.Scatter(
         x=sim_vols * 100, y=sim_rets * 100, mode="markers",
-        marker=dict(size=5, color=sim_sharpe, colorscale="Plasma", showscale=True, colorbar=dict(title="Sharpe")),
+        marker=dict(size=5, color=sim_sharpe, colorscale="Oranges", showscale=True, colorbar=dict(title="Sharpe")),
         name="Simulated Portfolios"
     ))
     fig_ef.add_trace(go.Scatter(
         x=np.sqrt(np.diag(cov_matrix)) * 100, y=mu_vec * 100, mode="markers+text",
         text=df_qualified["Ticker"].str.replace(".NS", ""), textposition="top center",
-        marker=dict(size=8, color="#38bdf8", symbol="diamond"),
+        marker=dict(size=8, color="#475569", symbol="diamond"),
         name="Qualified Assets"
     ))
     fig_ef.add_trace(go.Scatter(
         x=[port_vol * 100], y=[total_port_cagr * 100], mode="markers",
-        marker=dict(size=18, color="#00f5d4", symbol="star", line=dict(width=2, color="white")),
+        marker=dict(size=18, color="#ea580c", symbol="star", line=dict(width=2, color="#0f172a")),
         name="Aetheris Optimal Portfolio"
     ))
-    fig_ef.update_layout(template="plotly_dark", paper_bgcolor="#0c1220", plot_bgcolor="#0c1220", xaxis_title="Annualized Volatility (%)", yaxis_title="Expected Post-Tax CAGR (%)", height=340, margin=dict(l=15, r=15, t=20, b=15))
+    fig_ef.update_layout(template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#ffffff", xaxis_title="Annualized Volatility (%)", yaxis_title="Expected Post-Tax CAGR (%)", height=340, margin=dict(l=15, r=15, t=20, b=15))
     st.plotly_chart(fig_ef, width="stretch")
 
 # --- TAB 2: OPTIONS & SPREADS OR ---
 with t2:
-    st.subheader("OR-Optimized Next-Day Options & Vertical Debit Spreads Basket")
+    st.subheader("OR-Optimized Next-Day Options & Vertical Debit Spreads Basket (Live Spot Strikes)")
     if not df_opt_knapsack.empty:
         col_o1, col_o2 = st.columns([1.3, 1])
         with col_o1:
@@ -1292,9 +1482,9 @@ with t2:
 
         with col_o2:
             fig_opt_bar = go.Figure()
-            fig_opt_bar.add_trace(go.Bar(x=df_opt_knapsack["Ticker"], y=df_opt_knapsack["Total_Margin_INR"], name="Margin Deployed (INR)", marker_color="#a78bfa"))
-            fig_opt_bar.add_trace(go.Bar(x=df_opt_knapsack["Ticker"], y=df_opt_knapsack["Total_Est_Profit_INR"], name="Est. Next-Day Profit (INR)", marker_color="#00f5d4"))
-            fig_opt_bar.update_layout(title="Selected Basket: Margin Outlay vs. Expected Profit", barmode="group", template="plotly_dark", paper_bgcolor="#0c1220", plot_bgcolor="#0c1220", height=300, margin=dict(l=15, r=15, t=35, b=15))
+            fig_opt_bar.add_trace(go.Bar(x=df_opt_knapsack["Ticker"], y=df_opt_knapsack["Total_Margin_INR"], name="Margin Deployed (INR)", marker_color="#fdba74"))
+            fig_opt_bar.add_trace(go.Bar(x=df_opt_knapsack["Ticker"], y=df_opt_knapsack["Total_Est_Profit_INR"], name="Est. Next-Day Profit (INR)", marker_color="#ea580c"))
+            fig_opt_bar.update_layout(title="Selected Basket: Margin Outlay vs. Expected Profit", barmode="group", template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#ffffff", height=300, margin=dict(l=15, r=15, t=35, b=15))
             st.plotly_chart(fig_opt_bar, width="stretch")
     else:
         st.warning("Increase your Next-Day Options Budget in the sidebar to fit at least 1 F&O lot.")
@@ -1349,16 +1539,16 @@ with t3:
             spread_label = f"Bear Put Spread ({int(atm_k)}/{int(short_k)} PE)"
 
         fig_pay = go.Figure()
-        fig_pay.add_trace(go.Scatter(x=price_grid, y=spread_payoff, mode="lines", name=spread_label, line=dict(color="#00f5d4", width=3.2)))
-        fig_pay.add_trace(go.Scatter(x=price_grid, y=naked_payoff, mode="lines", name=f"Naked ATM {ot} ({int(atm_k)})", line=dict(color="#f472b6", dash="dash", width=2.4)))
-        fig_pay.add_hline(y=0, line_color="#64748b", line_dash="dot")
-        fig_pay.add_vline(x=spot_val, line_color="#fbbf24", line_dash="dot", annotation_text="Current Spot")
-        fig_pay.update_layout(title=f"{selected_sym} Expiry Payoff Curve (1 Lot = {lot_val} Qty)", xaxis_title="Underlying Price at Expiry (INR)", yaxis_title="Net P&L per Lot (INR)", template="plotly_dark", paper_bgcolor="#0c1220", plot_bgcolor="#0c1220", height=350)
+        fig_pay.add_trace(go.Scatter(x=price_grid, y=spread_payoff, mode="lines", name=spread_label, line=dict(color="#ea580c", width=3.2)))
+        fig_pay.add_trace(go.Scatter(x=price_grid, y=naked_payoff, mode="lines", name=f"Naked ATM {ot} ({int(atm_k)})", line=dict(color="#0f172a", dash="dash", width=2.2)))
+        fig_pay.add_hline(y=0, line_color="#94a3b8", line_dash="dot")
+        fig_pay.add_vline(x=spot_val, line_color="#f59e0b", line_dash="dot", annotation_text="Live Spot")
+        fig_pay.update_layout(title=f"{selected_sym} Expiry Payoff Curve (1 Lot = {lot_val} Qty)", xaxis_title="Underlying Price at Expiry (INR)", yaxis_title="Net P&L per Lot (INR)", template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#ffffff", height=350)
         st.plotly_chart(fig_pay, width="stretch")
 
 # --- TAB 4: NEXT-DAY INTRADAY PATTERN & NEWS ML ---
 with t4:
-    st.subheader("Next-Day Intraday Signal Matrix (Chart Patterns + F&O OI + Overnight News)")
+    st.subheader("Next-Day Intraday Signal Matrix (Live Spot + Patterns + F&O OI + Overnight News)")
 
     fig_intra = px.scatter(
         df_intraday,
@@ -1367,29 +1557,29 @@ with t4:
         size=np.abs(df_intraday["News_Sentiment"]) * 25 + 8,
         color="Signal",
         text="Ticker",
-        color_discrete_map={"LONG (BUY)": "#00f5d4", "SHORT (SELL)": "#fb7185"},
+        color_discrete_map={"LONG (BUY)": "#f97316", "SHORT (SELL)": "#0f172a"},
         title="Intraday Conviction Quadrant: Predicted Next-Day Move (%) vs. ML Win Probability (%)"
     )
     fig_intra.update_traces(textposition="top center")
-    fig_intra.add_vline(x=0, line_dash="dash", line_color="#64748b")
-    fig_intra.update_layout(template="plotly_dark", paper_bgcolor="#0c1220", plot_bgcolor="#0c1220", height=340, margin=dict(l=15, r=15, t=35, b=15))
+    fig_intra.add_vline(x=0, line_dash="dash", line_color="#94a3b8")
+    fig_intra.update_layout(template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#ffffff", height=340, margin=dict(l=15, r=15, t=35, b=15))
     st.plotly_chart(fig_intra, width="stretch")
 
     col_d1, col_d2 = st.columns([1.35, 1])
     with col_d1:
         st.dataframe(
-            df_intraday[["Ticker", "Company", "Spot_INR", "Chart_Pattern", "FO_OI_Signal", "News_Sentiment", "Signal", "Pred_Move_%", "Win_Prob_%", "Target_INR", "StopLoss_INR"]],
+            df_intraday[["Ticker", "Company", "Spot_INR", "Day_Chg_%", "Chart_Pattern", "FO_OI_Signal", "Signal", "Pred_Move_%", "Win_Prob_%", "Target_INR", "StopLoss_INR"]],
             width="stretch", height=420, hide_index=True
         )
     with col_d2:
         st.markdown("#### Overnight Catalyst & Pattern Feed (Top 6)")
         for _, r in df_intraday.head(6).iterrows():
-            badge_color = "#00f5d4" if "LONG" in r["Signal"] else "#fb7185"
+            badge_color = "#ea580c" if "LONG" in r["Signal"] else "#e11d48"
             st.markdown(f"""
-            <div class="catalyst-card" style="border-left: 3px solid {badge_color};">
+            <div class="catalyst-card" style="border-left: 4px solid {badge_color};">
                 <div style="font-weight:700; font-size:0.88rem; color:{badge_color};">{r['Ticker']} | {r['Signal']} ({r['Pred_Move_%']:+.2f}% | Win: {r['Win_Prob_%']:.1f}%)</div>
-                <div style="font-size:0.76rem; color:#94a3b8; margin-top:2px;">Pattern: <b>{r['Chart_Pattern']}</b> | OI: <b>{r['FO_OI_Signal']}</b></div>
-                <div style="font-size:0.79rem; color:#e2e8f0; margin-top:4px;">{r['Catalyst_News']}</div>
+                <div style="font-size:0.76rem; color:#64748b; margin-top:2px;">Live Spot: <b>INR {r['Spot_INR']:,.1f} ({r['Day_Chg_%']:+.2f}%)</b> | Pattern: <b>{r['Chart_Pattern']}</b></div>
+                <div style="font-size:0.79rem; color:#1e293b; margin-top:4px;">{r['Catalyst_News']}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -1416,11 +1606,11 @@ with t5:
         z=z_matrix,
         x=[f"${c}/bbl" for c in crude_grid],
         y=[f"INR {f:.2f}/$" for f in fx_grid],
-        colorscale="Turbo",
+        colorscale="YlOrRd",
         texttemplate="%{z:.2f}%",
         colorbar=dict(title="Est. CAGR %")
     ))
-    fig_hm.update_layout(title="Portfolio Expected CAGR (%) Across Crude Oil & Currency Shock Scenarios", xaxis_title="Brent Crude Oil ($/bbl)", yaxis_title="USD/INR Rate", template="plotly_dark", paper_bgcolor="#0c1220", height=330)
+    fig_hm.update_layout(title="Portfolio Expected CAGR (%) Across Crude Oil & Currency Shock Scenarios", xaxis_title="Brent Crude Oil ($/bbl)", yaxis_title="USD/INR Rate", template="plotly_white", paper_bgcolor="#ffffff", height=330)
     st.plotly_chart(fig_hm, width="stretch")
 
     sectors_list = sorted(df_all_scored["Sector"].unique())
@@ -1462,9 +1652,9 @@ with t6:
 
 # --- TAB 7: RESEARCH SCREENER, IPOS & OR MATH ---
 with t7:
-    st.subheader("Quarterly Earnings, Walk-Forward ML Diagnostics & Product Moat")
+    st.subheader("Live Market Quotes, Quarterly Earnings & Walk-Forward ML Diagnostics")
     st.dataframe(
-        df_all_scored[["Ticker", "Company", "Asset_Class", "Segment", "Sector", "YoY_Rev_%", "YoY_PAT_%", "ROE", "ML_Dir_Acc_%", "OOS_R2", "Effective_CAGR", "Conviction_Score", "Key_Products"]].sort_values(by="Conviction_Score", ascending=False),
+        df_all_scored[["Ticker", "Company", "Asset_Class", "Spot", "Day_Chg_%", "YoY_Rev_%", "YoY_PAT_%", "ROE", "ML_Dir_Acc_%", "OOS_R2", "Effective_CAGR", "Conviction_Score", "Key_Products"]].sort_values(by="Conviction_Score", ascending=False),
         width="stretch", height=340, hide_index=True
     )
 
@@ -1474,7 +1664,7 @@ with t7:
     st.subheader("Unified Operations Research & Derivatives Mathematical Architecture")
     st.markdown("""
     <div class="formula-box">
-    <b>1. Predict-Then-Optimize (SPO+) Alpha & Macro Overlay:</b><br>
+    <b>1. Live Telemetry & Predict-Then-Optimize (SPO+) Alpha Overlay:</b><br>
     mu_eff(i, Omega) = [0.4*RF + 0.4*GBR + 0.2*Ridge + dAlpha_Regime + Beta_Brent*dCrude + Beta_FX*dUSDINR] * (1 - tau_i)<br><br>
     <b>2. Multi-Asset Portfolio MILP & CVaR 95% LP (SciPy HiGHS):</b><br>
     Max Sum_i (mu_eff(i) + 0.045*Conv_i - 0.30*sigma_i^2)*w_i &nbsp; s.t. Sum(z_i) &lt;= K, &nbsp; 0.04*z_i &lt;= w_i &lt;= w_max*z_i, &nbsp; Sum_{crypto} w_i &lt;= C_max(Omega)<br><br>
