@@ -24,7 +24,7 @@ except ImportError:
     FPDF_AVAILABLE = False
 
 # ==========================================
-# 1. PAGE CONFIG & ANIMATED ORANGE & WHITE THEME
+# 1. PAGE CONFIG & STRICT ORANGE & WHITE CONTRAST THEME
 # ==========================================
 st.set_page_config(
     page_title="AETHERIS QUANT // OR | Orange & White Multi-Asset Terminal",
@@ -57,43 +57,103 @@ st.markdown("""
         50% { opacity: 0.45; }
     }
 
-    /* Main Canvas: Clean White & Warm Ivory */
-    .stApp {
-        background: linear-gradient(180deg, #ffffff 0%, #fffaf5 60%, #fff7ed 100%);
-        color: #0f172a;
+    /* 1. Eliminate ALL black backgrounds on main canvas, top header & sidebar */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+        background-color: #ffffff !important;
+        background-image: linear-gradient(180deg, #ffffff 0%, #fffaf5 65%, #fff7ed 100%) !important;
+        color: #000000 !important;
     }
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
-        border-right: 1px solid #fed7aa;
+    header[data-testid="stHeader"] {
+        background-color: #ffffff !important;
+        border-bottom: 1px solid #fed7aa !important;
     }
-    [data-testid="stSidebar"] * {
-        color: #1e293b;
+    header[data-testid="stHeader"] * {
+        color: #000000 !important;
+    }
+    [data-testid="stSidebar"], [data-testid="stSidebar"] > div:first-child {
+        background-color: #fff7ed !important;
+        border-right: 1px solid #fdba74 !important;
+        color: #000000 !important;
     }
 
-    /* Force clean dark text on headings & labels */
-    h1, h2, h3, h4, p, label, .stMarkdown {
-        color: #0f172a !important;
+    /* 2. Force BLACK text on all light surfaces */
+    h1, h2, h3, h4, h5, h6, p, span, div, label, li, .stMarkdown {
+        color: #000000;
     }
 
+    /* 3. Force WHITE/CREAM background & BLACK text on all sidebar inputs, dropdowns & expanders */
+    [data-testid="stSidebar"] input,
+    [data-testid="stSidebar"] select,
+    [data-testid="stSidebar"] textarea,
+    [data-baseweb="select"] > div,
+    [data-baseweb="input"] > div,
+    [data-baseweb="base-input"] {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 1px solid #fdba74 !important;
+        border-radius: 8px !important;
+    }
+    [data-baseweb="select"] span,
+    [data-baseweb="select"] div,
+    [data-baseweb="input"] input,
+    [data-testid="stNumberInput"] button {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+    }
+    /* Dropdown menu popover list */
+    ul[role="listbox"], ul[role="listbox"] li {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+    ul[role="listbox"] li:hover {
+        background-color: #ffedd5 !important;
+        color: #000000 !important;
+    }
+    /* Expanders in light mode */
+    [data-testid="stExpander"], details {
+        background-color: #ffffff !important;
+        border: 1px solid #fdba74 !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stExpander"] summary, details summary {
+        background-color: #fff7ed !important;
+        color: #000000 !important;
+    }
+
+    /* 4. Force LIGHT WHITE & ORANGE styling on Streamlit Dataframes / Tables */
+    [data-testid="stDataFrame"],
+    [data-testid="stDataFrame"] > div,
+    [data-testid="stTable"] {
+        background-color: #ffffff !important;
+        border: 1px solid #fdba74 !important;
+        border-radius: 10px !important;
+        color: #000000 !important;
+    }
+    [data-testid="stDataFrame"] * {
+        color: #000000 !important;
+    }
+
+    /* Live Badge: White background with Black/Orange text */
     .live-badge {
         display: inline-block;
         padding: 4px 12px;
         border-radius: 999px;
         font-size: 0.72rem;
-        font-weight: 700;
+        font-weight: 800;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        background: #ffffff;
-        color: #ea580c;
+        background-color: #ffffff !important;
+        color: #c2410c !important;
         border: 1px solid #fdba74;
         animation: liveBlink 2.2s infinite;
     }
 
-    /* Live Animated Market Ticker Tape */
+    /* Live Animated Market Ticker Tape (Light Cream Background, Dark High-Contrast Text) */
     .ticker-wrap {
         width: 100%;
         overflow: hidden;
-        background: #fff7ed;
+        background-color: #fff7ed !important;
         border-top: 1px solid #fdba74;
         border-bottom: 1px solid #fdba74;
         padding: 8px 0;
@@ -104,20 +164,20 @@ st.markdown("""
         display: inline-block;
         animation: tickerScroll 36s linear infinite;
         font-family: monospace;
-        font-size: 0.81rem;
+        font-size: 0.82rem;
         letter-spacing: 0.04em;
     }
     .ticker-move:hover { animation-play-state: paused; }
-    .tick-up { color: #059669; font-weight: 700; margin-right: 28px; }
-    .tick-down { color: #e11d48; font-weight: 700; margin-right: 28px; }
-    .tick-neutral { color: #ea580c; font-weight: 700; margin-right: 28px; }
+    .tick-up { color: #047857 !important; font-weight: 800; margin-right: 28px; }
+    .tick-down { color: #be123c !important; font-weight: 800; margin-right: 28px; }
+    .tick-neutral { color: #c2410c !important; font-weight: 800; margin-right: 28px; }
 
-    /* Animated Orange Header Banner */
+    /* Dark/Vibrant Orange Header Banner -> Strict WHITE Text */
     .brand-header {
-        background: linear-gradient(270deg, #ea580c, #f97316, #fb923c, #ea580c);
+        background: linear-gradient(270deg, #c2410c, #ea580c, #f97316, #c2410c) !important;
         background-size: 300% 300%;
         animation: gradientFlow 10s ease infinite, pulseBorder 4s infinite;
-        border: 1px solid #fb923c;
+        border: 1px solid #ea580c;
         border-radius: 14px;
         padding: 22px 28px;
         margin-bottom: 16px;
@@ -131,16 +191,16 @@ st.markdown("""
     }
     .brand-sub {
         font-size: 0.80rem;
-        color: #fff7ed !important;
+        color: #ffffff !important;
         letter-spacing: 0.15em;
         text-transform: uppercase;
         margin-top: 4px;
         font-weight: 600;
     }
 
-    /* Crisp White & Orange Metric Cards */
+    /* Light White Metric Cards -> Strict BLACK Text */
     .metric-card {
-        background: #ffffff;
+        background-color: #ffffff !important;
         border: 1px solid #fed7aa;
         border-radius: 12px;
         padding: 16px 18px;
@@ -150,40 +210,43 @@ st.markdown("""
     }
     .metric-card:hover {
         transform: translateY(-4px);
-        border-color: #f97316;
+        border-color: #ea580c;
         box-shadow: 0 10px 24px rgba(249, 115, 22, 0.18);
     }
     .card-orange-1 { border-top: 4px solid #f97316; }
     .card-orange-2 { border-top: 4px solid #ea580c; }
-    .card-amber    { border-top: 4px solid #f59e0b; }
-    .card-emerald  { border-top: 4px solid #10b981; }
+    .card-amber    { border-top: 4px solid #d97706; }
+    .card-emerald  { border-top: 4px solid #059669; }
 
-    .metric-label { font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
-    .metric-value { font-size: 1.46rem; font-weight: 800; color: #0f172a; margin-top: 5px; font-family: monospace; }
-    .metric-sub { font-size: 0.78rem; color: #059669; margin-top: 5px; font-weight: 600; }
-    .metric-alert { font-size: 0.78rem; color: #ea580c; margin-top: 5px; font-weight: 600; }
+    .metric-label { font-size: 0.72rem; color: #334155 !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+    .metric-value { font-size: 1.46rem; font-weight: 800; color: #000000 !important; margin-top: 5px; font-family: monospace; }
+    .metric-sub { font-size: 0.78rem; color: #047857 !important; margin-top: 5px; font-weight: 700; }
+    .metric-alert { font-size: 0.78rem; color: #c2410c !important; margin-top: 5px; font-weight: 700; }
 
-    /* Warm Orange Executive Signal Strip */
+    /* Light Warm Executive Banner -> Strict BLACK Text */
     .action-banner {
-        background: linear-gradient(90deg, #fff7ed, #ffedd5, #fff7ed);
+        background: linear-gradient(90deg, #fff7ed, #ffedd5, #fff7ed) !important;
         border: 1px solid #fdba74;
-        border-left: 5px solid #f97316;
+        border-left: 5px solid #ea580c;
         border-radius: 10px;
         padding: 14px 18px;
         margin-bottom: 18px;
         font-size: 0.90rem;
-        color: #1e293b;
+        color: #000000 !important;
         animation: fadeInSlide 0.6s ease-out;
     }
+    .action-banner b {
+        color: #000000 !important;
+    }
 
-    /* White Catalyst Cards with Orange Accent */
+    /* White Catalyst Cards -> Strict BLACK Text */
     .catalyst-card {
-        background: #ffffff;
+        background-color: #ffffff !important;
         border: 1px solid #fed7aa;
         border-radius: 10px;
         padding: 12px 14px;
         margin-bottom: 10px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        box-shadow: 0 2px 8px rgba(249, 115, 22, 0.06);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .catalyst-card:hover {
@@ -191,10 +254,10 @@ st.markdown("""
         box-shadow: 0 6px 16px rgba(249, 115, 22, 0.14);
     }
 
-    /* Stylized Orange & White Tabs */
+    /* Tabs: Black Text on Light Unselected Tabs, WHITE Text on Dark-Orange Active Tab */
     .stTabs [data-baseweb="tab-list"] {
         gap: 6px;
-        background-color: #fff7ed;
+        background-color: #fff7ed !important;
         padding: 6px;
         border-radius: 10px;
         border: 1px solid #fed7aa;
@@ -202,43 +265,84 @@ st.markdown("""
     .stTabs [data-baseweb="tab"] {
         border-radius: 7px;
         padding: 8px 14px;
-        color: #475569;
+        background-color: transparent !important;
+        color: #000000 !important;
         font-weight: 600;
         transition: all 0.2s ease;
     }
+    .stTabs [data-baseweb="tab"] * {
+        color: #000000 !important;
+    }
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(90deg, #f97316, #ea580c) !important;
+        background: linear-gradient(90deg, #ea580c, #f97316) !important;
         color: #ffffff !important;
         box-shadow: 0 3px 12px rgba(234, 88, 12, 0.35);
     }
+    .stTabs [aria-selected="true"] * {
+        color: #ffffff !important;
+    }
 
-    /* Buttons styled in Sunset Orange */
+    /* Dark-Orange Buttons -> Strict WHITE Text */
     .stButton > button, .stDownloadButton > button {
-        background: linear-gradient(90deg, #f97316, #ea580c) !important;
+        background: linear-gradient(90deg, #ea580c, #f97316) !important;
         color: #ffffff !important;
         border: none !important;
         border-radius: 8px !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
         box-shadow: 0 3px 10px rgba(249, 115, 22, 0.25) !important;
     }
+    .stButton > button *, .stDownloadButton > button * {
+        color: #ffffff !important;
+    }
     .stButton > button:hover, .stDownloadButton > button:hover {
-        background: linear-gradient(90deg, #ea580c, #c2410c) !important;
+        background: linear-gradient(90deg, #c2410c, #ea580c) !important;
         transform: translateY(-1px);
     }
 
+    /* White Formula Box -> Strict BLACK Text */
     .formula-box {
-        background: #ffffff;
+        background-color: #ffffff !important;
         border: 1px solid #fed7aa;
-        border-left: 5px solid #f97316;
+        border-left: 5px solid #ea580c;
         padding: 16px 20px;
         font-family: monospace;
         font-size: 0.83rem;
-        color: #1e293b;
+        color: #000000 !important;
         border-radius: 8px;
         line-height: 1.65;
     }
 </style>
 """, unsafe_allow_html=True)
+
+# Helper to enforce crisp BLACK text on all light Plotly charts
+def apply_light_orange_chart_style(fig, height=320, title_text=None):
+    layout_kwargs = dict(
+        template="plotly_white",
+        paper_bgcolor="#ffffff",
+        plot_bgcolor="#ffffff",
+        font=dict(color="#000000", size=12),
+        title_font=dict(color="#000000", size=15),
+        legend=dict(font=dict(color="#000000")),
+        height=height,
+    )
+    if title_text:
+        layout_kwargs["title"] = title_text
+    fig.update_layout(**layout_kwargs)
+    fig.update_xaxes(
+        color="#000000",
+        tickfont=dict(color="#000000"),
+        title_font=dict(color="#000000"),
+        gridcolor="#ffedd5",
+        linecolor="#fdba74"
+    )
+    fig.update_yaxes(
+        color="#000000",
+        tickfont=dict(color="#000000"),
+        title_font=dict(color="#000000"),
+        gridcolor="#ffedd5",
+        linecolor="#fdba74"
+    )
+    return fig
 
 # ==========================================
 # 2. CLEAN INVESTOR PRESETS & MACRO REGIMES
@@ -488,7 +592,7 @@ def fetch_live_market_snapshot(tickers_tuple: tuple):
     return meta
 
 # ==========================================
-# 5. UNIVERSAL PDF GENERATOR (ORANGE & WHITE HEADER)
+# 5. UNIVERSAL PDF GENERATOR (ORANGE & WHITE)
 # ==========================================
 def generate_investment_memo_pdf(
     macro_regime: str, brent_usd: float, usd_inr: float, solver_choice: str, horizon_label: str,
@@ -520,7 +624,7 @@ def generate_investment_memo_pdf(
     pdf.set_xy(12, 7)
     pdf.cell(0, 7, clean_txt("AETHERIS QUANT // OR - Quantitative Investment Memorandum"), ln=1)
     pdf.set_font("Helvetica", "", 8.5)
-    pdf.set_text_color(255, 247, 237)
+    pdf.set_text_color(255, 255, 255)
     pdf.set_x(12)
     gen_date = datetime.now().strftime("%d %b %Y, %I:%M %p IST")
     pdf.cell(0, 5, clean_txt(f"Generated: {gen_date}  |  Regime: {macro_regime}"), ln=1)
@@ -528,7 +632,7 @@ def generate_investment_memo_pdf(
     pdf.cell(0, 5, clean_txt(f"Brent: ${brent_usd:.1f}/bbl  |  USD/INR: Rs {usd_inr:.2f}  |  Solver: {solver_choice}"), ln=1)
 
     pdf.ln(9)
-    pdf.set_text_color(15, 23, 42)
+    pdf.set_text_color(0, 0, 0)
     pdf.set_font("Helvetica", "B", 11)
     pdf.cell(0, 7, clean_txt("1. Executive Portfolio & Macro-Adjusted Capital Deployment"), ln=1)
     pdf.set_draw_color(249, 115, 22)
@@ -547,34 +651,30 @@ def generate_investment_memo_pdf(
     pdf.set_font("Helvetica", "", 8.5)
     for k1, v1, k2, v2 in summary_rows:
         pdf.set_fill_color(255, 247, 237)
-        pdf.set_text_color(71, 85, 105)
+        pdf.set_text_color(0, 0, 0)
         pdf.cell(48, 6.5, clean_txt(f" {k1}"), border=1, fill=True)
-        pdf.set_text_color(15, 23, 42)
         pdf.set_font("Helvetica", "B", 8.5)
         pdf.cell(45, 6.5, clean_txt(f" {v1}"), border=1)
         pdf.set_font("Helvetica", "", 8.5)
-        pdf.set_text_color(71, 85, 105)
         pdf.cell(48, 6.5, clean_txt(f" {k2}"), border=1, fill=True)
-        pdf.set_text_color(15, 23, 42)
         pdf.set_font("Helvetica", "B", 8.5)
         pdf.cell(45, 6.5, clean_txt(f" {v2}"), border=1, ln=1)
         pdf.set_font("Helvetica", "", 8.5)
 
     pdf.ln(5)
-    pdf.set_text_color(15, 23, 42)
+    pdf.set_text_color(0, 0, 0)
     pdf.set_font("Helvetica", "B", 11)
     pdf.cell(0, 7, clean_txt("2. Walk-Forward Stacking ML & Indian Tax Compliance"), ln=1)
     pdf.line(12, pdf.get_y(), 198, pdf.get_y())
     pdf.ln(3)
     pdf.set_font("Helvetica", "", 8.5)
-    pdf.set_text_color(30, 41, 59)
     pdf.multi_cell(0, 4.8, clean_txt(
         f"- Stacking ML Ensemble: Random Forest (40%) + Gradient Boosting (40%) + Ridge (20%) | Walk-Forward Dir. Acc: {avg_ml_acc:.1f}% (OOS R2: {avg_oos_r2:.3f}).\n"
         f"- Tax Regime: {'Post-Tax Optimization (12.5% Equity LTCG >= 1Y / 20% STCG; 31.2% Flat VDA Crypto Sec 115BBH + 1% TDS)' if apply_indian_tax else 'Pre-Tax Gross Returns'}."
     ))
 
     pdf.ln(4)
-    pdf.set_text_color(15, 23, 42)
+    pdf.set_text_color(0, 0, 0)
     pdf.set_font("Helvetica", "B", 11)
     pdf.cell(0, 7, clean_txt("3. OR-Optimized Long-Term Multi-Asset Allocations"), ln=1)
     pdf.line(12, pdf.get_y(), 198, pdf.get_y())
@@ -593,7 +693,7 @@ def generate_investment_memo_pdf(
     for idx, row in winners_df.iterrows():
         fill = idx % 2 == 0
         pdf.set_fill_color(255, 247, 237) if fill else pdf.set_fill_color(255, 255, 255)
-        pdf.set_text_color(15, 23, 42)
+        pdf.set_text_color(0, 0, 0)
         vals = [
             row["Ticker"],
             str(row["Company"])[:23],
@@ -610,7 +710,7 @@ def generate_investment_memo_pdf(
 
     if not opt_knapsack_df.empty:
         pdf.ln(5)
-        pdf.set_text_color(15, 23, 42)
+        pdf.set_text_color(0, 0, 0)
         pdf.set_font("Helvetica", "B", 11)
         pdf.cell(0, 7, clean_txt("4. Next-Day Intraday Options & Vertical Spreads Trade Ticket"), ln=1)
         pdf.line(12, pdf.get_y(), 198, pdf.get_y())
@@ -1322,7 +1422,7 @@ with k4:
 st.markdown("---")
 
 # ==========================================
-# 14. 7-TAB ORANGE & WHITE WORKSPACE
+# 14. 7-TAB ORANGE & WHITE WORKSPACE (ZERO BLACK)
 # ==========================================
 t1, t2, t3, t4, t5, t6, t7 = st.tabs([
     "01. Portfolio & Frontier Analytics",
@@ -1333,6 +1433,17 @@ t1, t2, t3, t4, t5, t6, t7 = st.tabs([
     "06. Rebalancing & Tax Blotter",
     "07. Live Market Screener & Math"
 ])
+
+# Style helper for light orange/white Pandas Styler tables
+def style_light_table(df_in: pd.DataFrame):
+    return df_in.style.set_properties(**{
+        "background-color": "#ffffff",
+        "color": "#000000",
+        "border-color": "#fed7aa"
+    }).set_table_styles([
+        {"selector": "th", "props": [("background-color", "#fff7ed"), ("color", "#000000"), ("font-weight", "bold")]},
+        {"selector": "tr:nth-child(even) td", "props": [("background-color", "#fffaf5"), ("color", "#000000")]},
+    ])
 
 # --- TAB 1: LONG-TERM PORTFOLIO + GRAPHICAL FRONTIER, RADAR & SUNBURST ---
 with t1:
@@ -1346,14 +1457,14 @@ with t1:
         disp["Portfolio_Weight_%"] = disp["Portfolio_Weight_%"].map("{:.2f}%".format)
         disp["Allocation_INR"] = disp["Allocation_INR"].map("INR {:,.0f}".format)
         disp["Monthly_SIP_INR"] = disp["Monthly_SIP_INR"].map("INR {:,.0f}".format)
-        st.dataframe(disp, width="stretch", hide_index=True)
+        st.dataframe(style_light_table(disp), width="stretch", hide_index=True)
 
         if ipo_sleeve_pct > 0 and ipo_capital > 0:
             st.markdown(f"#### Dedicated IPO Sleeve (INR {ipo_capital:,.0f} across Top 3 Upcoming Listings)")
             top_ipos["IPO_LumpSum_INR"] = np.round(ipo_capital / len(top_ipos), 0)
             ipo_disp = top_ipos[["IPO_Company", "DRHP_Stage", "Est_GMP_%", "Expected_1Y_Alpha_%", "IPO_LumpSum_INR"]].copy()
             ipo_disp["IPO_LumpSum_INR"] = ipo_disp["IPO_LumpSum_INR"].map("INR {:,.0f}".format)
-            st.dataframe(ipo_disp, width="stretch", hide_index=True)
+            st.dataframe(style_light_table(ipo_disp), width="stretch", hide_index=True)
 
         b1, b2 = st.columns(2)
         with b1:
@@ -1377,7 +1488,7 @@ with t1:
         top4 = winners.head(4)
         categories = ["Rev Growth", "PAT Growth", "ROE Strength", "Product Moat", "ML Conviction"]
         fig_rad = go.Figure()
-        radar_colors = ["#ea580c", "#f59e0b", "#0f172a", "#10b981"]
+        radar_colors = ["#ea580c", "#f59e0b", "#059669", "#d97706"]
         for idx_r, r_row in top4.iterrows():
             vals = [
                 min(100, (r_row["YoY_Rev_%"] / 50.0) * 100),
@@ -1391,12 +1502,17 @@ with t1:
                 theta=categories + [categories[0]],
                 fill="toself",
                 name=r_row["Ticker"].replace(".NS", ""),
-                line=dict(color=radar_colors[idx_r % len(radar_colors)], width=2.2)
+                line=dict(color=radar_colors[idx_r % len(radar_colors)], width=2.4)
             ))
         fig_rad.update_layout(
-            polar=dict(bgcolor="#ffffff", radialaxis=dict(visible=True, range=[0, 100], gridcolor="#fed7aa"), angularaxis=dict(gridcolor="#fed7aa")),
-            template="plotly_white", paper_bgcolor="#ffffff", height=320, margin=dict(l=30, r=30, t=25, b=20)
+            polar=dict(
+                bgcolor="#ffffff",
+                radialaxis=dict(visible=True, range=[0, 100], gridcolor="#fed7aa", tickfont=dict(color="#000000")),
+                angularaxis=dict(gridcolor="#fed7aa", tickfont=dict(color="#000000"))
+            ),
+            margin=dict(l=30, r=30, t=25, b=20)
         )
+        apply_light_orange_chart_style(fig_rad, height=320)
         st.plotly_chart(fig_rad, width="stretch")
 
     with col_r:
@@ -1412,11 +1528,12 @@ with t1:
 
         fig_w = go.Figure()
         fig_w.add_trace(go.Scatter(x=months, y=upper_band, mode="lines", line=dict(width=0), showlegend=False))
-        fig_w.add_trace(go.Scatter(x=months, y=lower_band, mode="lines", line=dict(width=0), fill="tonexty", fillcolor="rgba(249, 115, 22, 0.14)", name="Volatility Cone"))
-        fig_w.add_trace(go.Scatter(x=months, y=opt_curve, mode="lines", name="Aetheris OR Wealth", line=dict(color="#ea580c", width=3)))
-        fig_w.add_trace(go.Scatter(x=months, y=nifty_curve, mode="lines", name="Nifty 50 Benchmark (12.5%)", line=dict(color="#0f172a", dash="dash", width=2.2)))
-        fig_w.add_trace(go.Scatter(x=months, y=invested_line, mode="lines", name="Total Principal", line=dict(color="#94a3b8", dash="dot", width=1.6)))
-        fig_w.update_layout(template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#ffffff", xaxis_title="Months", yaxis_title="Portfolio Value (INR)", height=310, margin=dict(l=15, r=15, t=20, b=15), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+        fig_w.add_trace(go.Scatter(x=months, y=lower_band, mode="lines", line=dict(width=0), fill="tonexty", fillcolor="rgba(249, 115, 22, 0.16)", name="Volatility Cone"))
+        fig_w.add_trace(go.Scatter(x=months, y=opt_curve, mode="lines", name="Aetheris OR Wealth", line=dict(color="#ea580c", width=3.2)))
+        fig_w.add_trace(go.Scatter(x=months, y=nifty_curve, mode="lines", name="Nifty 50 Benchmark (12.5%)", line=dict(color="#d97706", dash="dash", width=2.2)))
+        fig_w.add_trace(go.Scatter(x=months, y=invested_line, mode="lines", name="Total Principal", line=dict(color="#64748b", dash="dot", width=1.8)))
+        fig_w.update_layout(xaxis_title="Months", yaxis_title="Portfolio Value (INR)", margin=dict(l=15, r=15, t=20, b=15), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(color="#000000")))
+        apply_light_orange_chart_style(fig_w, height=310)
         st.plotly_chart(fig_w, width="stretch")
 
         sb_df = winners[["Asset_Class", "Sector", "Ticker", "Allocation_INR"]].copy()
@@ -1426,8 +1543,10 @@ with t1:
         if dry_powder_inr > 0:
             sb_df = pd.concat([sb_df, pd.DataFrame([{"Asset_Class": "Liquid Reserve", "Sector": "Repo-Linked Debt", "Ticker": "Dry Powder", "Allocation_INR": dry_powder_inr}])], ignore_index=True)
 
-        fig_sb = px.sunburst(sb_df, path=["Asset_Class", "Sector", "Ticker"], values="Allocation_INR", title="Multi-Asset Capital Hierarchy (Class > Sector > Ticker)", color="Asset_Class", color_discrete_sequence=["#f97316", "#fb923c", "#f59e0b", "#475569"])
-        fig_sb.update_layout(template="plotly_white", paper_bgcolor="#ffffff", height=320, margin=dict(l=10, r=10, t=35, b=10))
+        fig_sb = px.sunburst(sb_df, path=["Asset_Class", "Sector", "Ticker"], values="Allocation_INR", title="Multi-Asset Capital Hierarchy (Class > Sector > Ticker)", color="Asset_Class", color_discrete_sequence=["#f97316", "#fb923c", "#f59e0b", "#fdba74"])
+        fig_sb.update_traces(textfont=dict(color="#000000"))
+        fig_sb.update_layout(margin=dict(l=10, r=10, t=40, b=10))
+        apply_light_orange_chart_style(fig_sb, height=320)
         st.plotly_chart(fig_sb, width="stretch")
 
     st.subheader("Markowitz Efficient Frontier & Cross-Asset Risk-Return Map")
@@ -1442,21 +1561,23 @@ with t1:
     fig_ef = go.Figure()
     fig_ef.add_trace(go.Scatter(
         x=sim_vols * 100, y=sim_rets * 100, mode="markers",
-        marker=dict(size=5, color=sim_sharpe, colorscale="Oranges", showscale=True, colorbar=dict(title="Sharpe")),
+        marker=dict(size=5, color=sim_sharpe, colorscale="Oranges", showscale=True, colorbar=dict(title=dict(text="Sharpe", font=dict(color="#000000")), tickfont=dict(color="#000000"))),
         name="Simulated Portfolios"
     ))
     fig_ef.add_trace(go.Scatter(
         x=np.sqrt(np.diag(cov_matrix)) * 100, y=mu_vec * 100, mode="markers+text",
         text=df_qualified["Ticker"].str.replace(".NS", ""), textposition="top center",
-        marker=dict(size=8, color="#475569", symbol="diamond"),
+        textfont=dict(color="#000000"),
+        marker=dict(size=8, color="#d97706", symbol="diamond"),
         name="Qualified Assets"
     ))
     fig_ef.add_trace(go.Scatter(
         x=[port_vol * 100], y=[total_port_cagr * 100], mode="markers",
-        marker=dict(size=18, color="#ea580c", symbol="star", line=dict(width=2, color="#0f172a")),
+        marker=dict(size=18, color="#ea580c", symbol="star", line=dict(width=2, color="#ffffff")),
         name="Aetheris Optimal Portfolio"
     ))
-    fig_ef.update_layout(template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#ffffff", xaxis_title="Annualized Volatility (%)", yaxis_title="Expected Post-Tax CAGR (%)", height=340, margin=dict(l=15, r=15, t=20, b=15))
+    fig_ef.update_layout(xaxis_title="Annualized Volatility (%)", yaxis_title="Expected Post-Tax CAGR (%)", margin=dict(l=15, r=15, t=20, b=15))
+    apply_light_orange_chart_style(fig_ef, height=340)
     st.plotly_chart(fig_ef, width="stretch")
 
 # --- TAB 2: OPTIONS & SPREADS OR ---
@@ -1475,7 +1596,7 @@ with t2:
             k_disp["Total_Est_Profit_INR"] = k_disp["Total_Est_Profit_INR"].map("+INR {:,.0f}".format)
             k_disp["Theta_Saved_%"] = k_disp["Theta_Saved_%"].map("{:.1f}%".format)
             k_disp["ROI_Per_Lot_%"] = k_disp["ROI_Per_Lot_%"].map("{:+.1f}%".format)
-            st.dataframe(k_disp, width="stretch", hide_index=True)
+            st.dataframe(style_light_table(k_disp), width="stretch", hide_index=True)
 
             csv_opt = df_opt_knapsack.to_csv(index=False).encode("utf-8")
             st.download_button("Export Options Trade Ticket (CSV)", data=csv_opt, file_name="aetheris_options_trades.csv", mime="text/csv")
@@ -1484,7 +1605,8 @@ with t2:
             fig_opt_bar = go.Figure()
             fig_opt_bar.add_trace(go.Bar(x=df_opt_knapsack["Ticker"], y=df_opt_knapsack["Total_Margin_INR"], name="Margin Deployed (INR)", marker_color="#fdba74"))
             fig_opt_bar.add_trace(go.Bar(x=df_opt_knapsack["Ticker"], y=df_opt_knapsack["Total_Est_Profit_INR"], name="Est. Next-Day Profit (INR)", marker_color="#ea580c"))
-            fig_opt_bar.update_layout(title="Selected Basket: Margin Outlay vs. Expected Profit", barmode="group", template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#ffffff", height=300, margin=dict(l=15, r=15, t=35, b=15))
+            fig_opt_bar.update_layout(title="Selected Basket: Margin Outlay vs. Expected Profit", barmode="group", margin=dict(l=15, r=15, t=40, b=15))
+            apply_light_orange_chart_style(fig_opt_bar, height=300)
             st.plotly_chart(fig_opt_bar, width="stretch")
     else:
         st.warning("Increase your Next-Day Options Budget in the sidebar to fit at least 1 F&O lot.")
@@ -1499,7 +1621,7 @@ with t2:
     opt_disp["Est_Profit_1_Lot"] = opt_disp["Est_Profit_1_Lot"].map("{:+,.0f}".format)
     opt_disp["Theta_Day_Lot"] = opt_disp["Theta_Day_Lot"].map("{:+,.0f}".format)
     opt_disp["Theta_Saved_%"] = opt_disp["Theta_Saved_%"].map("{:.1f}%".format)
-    st.dataframe(opt_disp, width="stretch", height=390, hide_index=True)
+    st.dataframe(style_light_table(opt_disp), width="stretch", height=390, hide_index=True)
 
 # --- TAB 3: NAKED VS SPREAD PAYOFF LAB ---
 with t3:
@@ -1509,11 +1631,11 @@ with t3:
 
     if not sub_df.empty:
         st.dataframe(
-            sub_df[[
+            style_light_table(sub_df[[
                 "Strategy_Structure", "Contract_Legs", "Lot_Size", "Net_Debit_Prem",
                 "Target_Spread_Val", "Margin_Required_Lot", "Theta_Day_Lot", "Theta_Saved_%",
                 "Max_Payoff_Cap_Lot", "Est_Profit_1_Lot", "ROI_Per_Lot_%", "Net_Delta"
-            ]],
+            ]]),
             width="stretch", hide_index=True
         )
 
@@ -1540,10 +1662,11 @@ with t3:
 
         fig_pay = go.Figure()
         fig_pay.add_trace(go.Scatter(x=price_grid, y=spread_payoff, mode="lines", name=spread_label, line=dict(color="#ea580c", width=3.2)))
-        fig_pay.add_trace(go.Scatter(x=price_grid, y=naked_payoff, mode="lines", name=f"Naked ATM {ot} ({int(atm_k)})", line=dict(color="#0f172a", dash="dash", width=2.2)))
+        fig_pay.add_trace(go.Scatter(x=price_grid, y=naked_payoff, mode="lines", name=f"Naked ATM {ot} ({int(atm_k)})", line=dict(color="#d97706", dash="dash", width=2.2)))
         fig_pay.add_hline(y=0, line_color="#94a3b8", line_dash="dot")
-        fig_pay.add_vline(x=spot_val, line_color="#f59e0b", line_dash="dot", annotation_text="Live Spot")
-        fig_pay.update_layout(title=f"{selected_sym} Expiry Payoff Curve (1 Lot = {lot_val} Qty)", xaxis_title="Underlying Price at Expiry (INR)", yaxis_title="Net P&L per Lot (INR)", template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#ffffff", height=350)
+        fig_pay.add_vline(x=spot_val, line_color="#f59e0b", line_dash="dot", annotation_text="Live Spot", annotation_font=dict(color="#000000"))
+        fig_pay.update_layout(title=f"{selected_sym} Expiry Payoff Curve (1 Lot = {lot_val} Qty)", xaxis_title="Underlying Price at Expiry (INR)", yaxis_title="Net P&L per Lot (INR)")
+        apply_light_orange_chart_style(fig_pay, height=350)
         st.plotly_chart(fig_pay, width="stretch")
 
 # --- TAB 4: NEXT-DAY INTRADAY PATTERN & NEWS ML ---
@@ -1557,29 +1680,30 @@ with t4:
         size=np.abs(df_intraday["News_Sentiment"]) * 25 + 8,
         color="Signal",
         text="Ticker",
-        color_discrete_map={"LONG (BUY)": "#f97316", "SHORT (SELL)": "#0f172a"},
+        color_discrete_map={"LONG (BUY)": "#f97316", "SHORT (SELL)": "#e11d48"},
         title="Intraday Conviction Quadrant: Predicted Next-Day Move (%) vs. ML Win Probability (%)"
     )
-    fig_intra.update_traces(textposition="top center")
+    fig_intra.update_traces(textposition="top center", textfont=dict(color="#000000"))
     fig_intra.add_vline(x=0, line_dash="dash", line_color="#94a3b8")
-    fig_intra.update_layout(template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#ffffff", height=340, margin=dict(l=15, r=15, t=35, b=15))
+    fig_intra.update_layout(margin=dict(l=15, r=15, t=40, b=15))
+    apply_light_orange_chart_style(fig_intra, height=340)
     st.plotly_chart(fig_intra, width="stretch")
 
     col_d1, col_d2 = st.columns([1.35, 1])
     with col_d1:
         st.dataframe(
-            df_intraday[["Ticker", "Company", "Spot_INR", "Day_Chg_%", "Chart_Pattern", "FO_OI_Signal", "Signal", "Pred_Move_%", "Win_Prob_%", "Target_INR", "StopLoss_INR"]],
+            style_light_table(df_intraday[["Ticker", "Company", "Spot_INR", "Day_Chg_%", "Chart_Pattern", "FO_OI_Signal", "Signal", "Pred_Move_%", "Win_Prob_%", "Target_INR", "StopLoss_INR"]]),
             width="stretch", height=420, hide_index=True
         )
     with col_d2:
         st.markdown("#### Overnight Catalyst & Pattern Feed (Top 6)")
         for _, r in df_intraday.head(6).iterrows():
-            badge_color = "#ea580c" if "LONG" in r["Signal"] else "#e11d48"
+            badge_color = "#c2410c" if "LONG" in r["Signal"] else "#be123c"
             st.markdown(f"""
             <div class="catalyst-card" style="border-left: 4px solid {badge_color};">
-                <div style="font-weight:700; font-size:0.88rem; color:{badge_color};">{r['Ticker']} | {r['Signal']} ({r['Pred_Move_%']:+.2f}% | Win: {r['Win_Prob_%']:.1f}%)</div>
-                <div style="font-size:0.76rem; color:#64748b; margin-top:2px;">Live Spot: <b>INR {r['Spot_INR']:,.1f} ({r['Day_Chg_%']:+.2f}%)</b> | Pattern: <b>{r['Chart_Pattern']}</b></div>
-                <div style="font-size:0.79rem; color:#1e293b; margin-top:4px;">{r['Catalyst_News']}</div>
+                <div style="font-weight:700; font-size:0.88rem; color:{badge_color} !important;">{r['Ticker']} | {r['Signal']} ({r['Pred_Move_%']:+.2f}% | Win: {r['Win_Prob_%']:.1f}%)</div>
+                <div style="font-size:0.76rem; color:#334155 !important; margin-top:2px;">Live Spot: <b style="color:#000000;">INR {r['Spot_INR']:,.1f} ({r['Day_Chg_%']:+.2f}%)</b> | Pattern: <b style="color:#000000;">{r['Chart_Pattern']}</b></div>
+                <div style="font-size:0.79rem; color:#000000 !important; margin-top:4px;">{r['Catalyst_News']}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -1606,11 +1730,13 @@ with t5:
         z=z_matrix,
         x=[f"${c}/bbl" for c in crude_grid],
         y=[f"INR {f:.2f}/$" for f in fx_grid],
-        colorscale="YlOrRd",
+        colorscale="Oranges",
         texttemplate="%{z:.2f}%",
-        colorbar=dict(title="Est. CAGR %")
+        textfont=dict(color="#000000"),
+        colorbar=dict(title=dict(text="Est. CAGR %", font=dict(color="#000000")), tickfont=dict(color="#000000"))
     ))
-    fig_hm.update_layout(title="Portfolio Expected CAGR (%) Across Crude Oil & Currency Shock Scenarios", xaxis_title="Brent Crude Oil ($/bbl)", yaxis_title="USD/INR Rate", template="plotly_white", paper_bgcolor="#ffffff", height=330)
+    fig_hm.update_layout(title="Portfolio Expected CAGR (%) Across Crude Oil & Currency Shock Scenarios", xaxis_title="Brent Crude Oil ($/bbl)", yaxis_title="USD/INR Rate")
+    apply_light_orange_chart_style(fig_hm, height=330)
     st.plotly_chart(fig_hm, width="stretch")
 
     sectors_list = sorted(df_all_scored["Sector"].unique())
@@ -1626,7 +1752,7 @@ with t5:
             f"FX Impact (INR {usd_inr:.2f})": f"{f_imp:+.2f}%",
             "Net Sector Alpha Shift": f"{c_imp + f_imp:+.2f}%"
         })
-    st.dataframe(pd.DataFrame(sens_rows), width="stretch", hide_index=True)
+    st.dataframe(style_light_table(pd.DataFrame(sens_rows)), width="stretch", hide_index=True)
 
 # --- TAB 6: REBALANCING & TAX BLOTTER ---
 with t6:
@@ -1648,18 +1774,18 @@ with t6:
         return round(est_gain * (0.125 if horizon_years >= 1.0 else 0.20), 0)
 
     blotter["Est_Tax_&_TDS_INR"] = blotter.apply(calc_trade_tax, axis=1)
-    st.dataframe(blotter, width="stretch", hide_index=True)
+    st.dataframe(style_light_table(blotter), width="stretch", hide_index=True)
 
 # --- TAB 7: RESEARCH SCREENER, IPOS & OR MATH ---
 with t7:
     st.subheader("Live Market Quotes, Quarterly Earnings & Walk-Forward ML Diagnostics")
     st.dataframe(
-        df_all_scored[["Ticker", "Company", "Asset_Class", "Spot", "Day_Chg_%", "YoY_Rev_%", "YoY_PAT_%", "ROE", "ML_Dir_Acc_%", "OOS_R2", "Effective_CAGR", "Conviction_Score", "Key_Products"]].sort_values(by="Conviction_Score", ascending=False),
+        style_light_table(df_all_scored[["Ticker", "Company", "Asset_Class", "Spot", "Day_Chg_%", "YoY_Rev_%", "YoY_PAT_%", "ROE", "ML_Dir_Acc_%", "OOS_R2", "Effective_CAGR", "Conviction_Score", "Key_Products"]].sort_values(by="Conviction_Score", ascending=False)),
         width="stretch", height=340, hide_index=True
     )
 
     st.subheader("Active SEBI DRHP Filings (Nov 2026) & Mega-IPO Pipeline")
-    st.dataframe(ipo_df.sort_values(by="QIB_Demand_Score", ascending=False), width="stretch", hide_index=True)
+    st.dataframe(style_light_table(ipo_df.sort_values(by="QIB_Demand_Score", ascending=False)), width="stretch", hide_index=True)
 
     st.subheader("Unified Operations Research & Derivatives Mathematical Architecture")
     st.markdown("""
